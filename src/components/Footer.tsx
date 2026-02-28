@@ -38,14 +38,14 @@ export function Footer() {
                     <div className="flex items-center gap-2 text-sm md:gap-4">
                         <div className="flex flex-col gap-1">
                             <span className="font-medium">Designed & Developed by</span>
-                            <span className="text-foreground text-base tracking-wide font-bold font-fredoka">
+                            <span className="text-foreground text-base tracking-wide font-semibold font-fredoka">
                                 Pushkar R Deshpande
                             </span>
                         </div>
                         <Separator orientation="vertical" />
                         <div className="flex flex-col gap-1">
                             <span className="font-medium">Ideator</span>
-                            <span className="text-foreground text-base tracking-wide font-bold font-fredoka">
+                            <span className="text-foreground text-base tracking-wide font-semibold font-fredoka">
                                 Hemsagar B C
                             </span>
                         </div>
