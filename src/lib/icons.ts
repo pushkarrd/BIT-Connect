@@ -1,0 +1,32 @@
+import {
+    Building2,
+    Cog,
+    Zap,
+    Radio,
+    Monitor,
+    Gauge,
+    Factory,
+    Satellite,
+    Database,
+    Brain,
+    Shield,
+    BarChart3,
+    Bot,
+    type LucideIcon,
+} from "lucide-react";
+
+export const branchIconMap: Record<string, LucideIcon> = {
+    Building2,
+    Cog,
+    Zap,
+    Radio,
+    Monitor,
+    Gauge,
+    Factory,
+    Satellite,
+    Database,
+    Brain,
+    Shield,
+    BarChart3,
+    Bot,
+};
