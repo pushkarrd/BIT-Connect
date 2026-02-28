@@ -31,21 +31,21 @@ export function Footer() {
 
                     {/* Center: Copyright */}
                     <p className="text-xs text-muted-foreground">
-                        &copy; 2026 BIT Study HUB. All rights reserved.
+                        &copy; 2026 BIT Connect. All rights reserved.
                     </p>
 
                     {/* Right: Credits with vertical separator */}
                     <div className="flex items-center gap-2 text-sm md:gap-4">
                         <div className="flex flex-col gap-1">
                             <span className="font-medium">Designed & Developed by</span>
-                            <span className="text-foreground text-base tracking-wide font-bold font-playfair">
+                            <span className="text-foreground text-base tracking-wide font-bold font-fredoka">
                                 Pushkar R Deshpande
                             </span>
                         </div>
                         <Separator orientation="vertical" />
                         <div className="flex flex-col gap-1">
                             <span className="font-medium">Ideator</span>
-                            <span className="text-foreground text-base tracking-wide font-bold font-playfair">
+                            <span className="text-foreground text-base tracking-wide font-bold font-fredoka">
                                 Hemsagar B C
                             </span>
                         </div>
