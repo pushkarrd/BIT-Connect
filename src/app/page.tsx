@@ -28,6 +28,8 @@ import {
   Upload,
   Users,
   GraduationCap,
+  Calculator,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -54,7 +56,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           <div className="flex flex-col items-center text-center">
-            <Badge variant="secondary" className="mb-4">
+            <Badge variant="secondary" className="mb-4 text-base px-6 py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 font-semibold shadow-sm">
               By the students, for the students
             </Badge>
             <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
@@ -80,6 +82,12 @@ export default function HomePage() {
                   Community Board
                 </Link>
               </Button>
+              <Button size="lg" variant="secondary" className="bg-primary/5 border hover:bg-primary/10" asChild>
+                <Link href="/calculator">
+                  <Calculator className="mr-2 h-4 w-4" />
+                  SEE Grade Calculator
+                </Link>
+              </Button>
             </div>
 
             {/* Stats */}
@@ -91,15 +99,15 @@ export default function HomePage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Upload className="h-4 w-4 text-primary" />
+                <FileText className="h-4 w-4 text-primary" />
                 <span>
-                  <strong className="text-foreground">Anonymous</strong> Uploads
+                  Access <strong className="text-foreground">Notes</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
+                <BookOpen className="h-4 w-4 text-primary" />
                 <span>
-                  <strong className="text-foreground">Zero</strong> Friction
+                  <strong className="text-foreground">PYQs</strong> and IA Papers
                 </span>
               </div>
             </div>
@@ -238,14 +246,19 @@ export default function HomePage() {
               <h3 className="text-xl font-bold tracking-tight mb-3">
                 What We Offer
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                We have gathered and organized academic resources across all
-                13 UG branches. Whether you are looking for specific
-                department class notes, internal test papers, or SEE PYQs,
-                everything is neatly categorized and instantly accessible. No
-                gatekeeping, no endless searching—just the exact materials you
-                need to succeed, exactly when you need them.
-              </p>
+              <div className="text-muted-foreground leading-relaxed space-y-4">
+                <p>
+                  We have gathered and organized academic resources across all
+                  13 UG branches. Whether you are looking for specific
+                  department <strong>Notes</strong>, <strong>Internal Papers</strong>, or <strong>PYQs</strong>,
+                  everything is neatly categorized and instantly accessible. No
+                  gatekeeping, no endless searching—just the exact materials you
+                  need to succeed, exactly when you need them.
+                </p>
+                <p>
+                  Additionally, try our new interactive <strong>SEE Grade Calculator</strong>! It takes the guesswork out of your finals. Simply input your uploaded CIE marks and select your target grade (like <strong>O</strong>, <strong>A+</strong>, or <strong>A</strong>)—and it will instantly suggest exactly how much you need to score in the SEE to achieve it!
+                </p>
+              </div>
             </div>
 
             {/* Call to action */}
