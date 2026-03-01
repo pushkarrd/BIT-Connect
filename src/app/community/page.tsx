@@ -45,7 +45,7 @@ function PostSkeleton() {
 }
 
 export default function CommunityPage() {
-    const [posts, setPosts] = React.useState<Post[]>([]);
+    const [allPosts, setAllPosts] = React.useState<Post[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [newPostOpen, setNewPostOpen] = React.useState(false);
     const [activeBranch, setActiveBranch] = React.useState<string | null>(null);
@@ -56,21 +56,11 @@ export default function CommunityPage() {
             new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
         );
 
-        let q;
-        if (activeBranch) {
-            q = query(
-                collection(db, "communityPosts"),
-                where("branch", "==", activeBranch),
-                where("timestamp", ">=", sixtyDaysAgo),
-                orderBy("timestamp", "desc")
-            );
-        } else {
-            q = query(
-                collection(db, "communityPosts"),
-                where("timestamp", ">=", sixtyDaysAgo),
-                orderBy("timestamp", "desc")
-            );
-        }
+        const q = query(
+            collection(db, "communityPosts"),
+            where("timestamp", ">=", sixtyDaysAgo),
+            orderBy("timestamp", "desc")
+        );
 
         setLoading(true);
 
@@ -81,7 +71,7 @@ export default function CommunityPage() {
                     id: doc.id,
                     ...doc.data(),
                 })) as Post[];
-                setPosts(docs);
+                setAllPosts(docs);
                 setLoading(false);
             },
             (error) => {
@@ -91,7 +81,12 @@ export default function CommunityPage() {
         );
 
         return () => unsubscribe();
-    }, [activeBranch]);
+    }, []);
+
+    const posts = React.useMemo(() => {
+        if (!activeBranch) return allPosts;
+        return allPosts.filter(post => post.branch === activeBranch);
+    }, [allPosts, activeBranch]);
 
     return (
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -147,7 +142,7 @@ export default function CommunityPage() {
             </FadeIn>
 
             {/* Posts Feed */}
-            <StaggerContainer delayChildren={0.3} staggerChildren={0.1} className="space-y-4">
+            <StaggerContainer key={activeBranch ?? "all"} delayChildren={0.3} staggerChildren={0.1} className="space-y-4">
                 {loading ? (
                     Array.from({ length: 4 }).map((_, i) => <StaggerItem key={i}><PostSkeleton /></StaggerItem>)
                 ) : posts.length === 0 ? (
