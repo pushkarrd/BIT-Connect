@@ -595,11 +595,11 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                                 pointerEvents: 'none'
                             }}
                         >
-                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '1.5rem' }}>
+                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '1rem' }}>
                                 <h3
-                                    className="font-bold m-0 leading-tight text-center break-words max-w-[90%]"
+                                    className="font-bold m-0 leading-tight text-center break-words max-w-full px-2"
                                     style={{
-                                        fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
+                                        fontSize: 'clamp(1.2rem, 5.5vw, 2.1rem)',
                                         backgroundImage: 'linear-gradient(to bottom, #fff, #6f6fbe)',
                                         backgroundSize: '1em 1.5em',
                                         WebkitTextFillColor: 'transparent',
@@ -610,9 +610,9 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                                     {name}
                                 </h3>
                                 <p
-                                    className="font-semibold text-center mt-2 max-w-[90%]"
+                                    className="font-semibold text-center mt-1.5 max-w-full px-2"
                                     style={{
-                                        fontSize: '0.9rem',
+                                        fontSize: '0.85rem',
                                         backgroundImage: 'linear-gradient(to bottom, #fff, #4a4ac0)',
                                         backgroundSize: '1em 1.5em',
                                         WebkitTextFillColor: 'transparent',
