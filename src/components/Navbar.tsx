@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 
 import Image from "next/image";
+import BITLogo from "../../public/BIT.png";
 
 interface NavbarProps {
     onUploadClick: () => void;
@@ -180,7 +181,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                     <Separator orientation="vertical" className="h-8 bg-zinc-300 dark:bg-zinc-700" />
 
                     <Image
-                        src="/BIT.png"
+                        src={BITLogo}
                         alt="BIT Logo"
                         width={36}
                         height={36}
