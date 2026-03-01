@@ -27,6 +27,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import {
     BookOpen,
+    Calculator,
     Menu,
     MessageSquare,
     Search,
@@ -48,6 +49,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
     const navLinks = [
         { href: "/", label: "Resource Vault", icon: BookOpen },
         { href: "/community", label: "Community", icon: MessageSquare },
+        { href: "/calculator", label: "Calculator", icon: Calculator },
         { href: "/#about", label: "About", icon: GraduationCap },
         { href: "/contact", label: "Contact Us", icon: MessageSquare },
     ];
