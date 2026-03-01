@@ -382,7 +382,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         maskRepeat: 'repeat',
         maskSize: '150%',
         maskPosition: 'top calc(200% - (var(--background-y) * 5)) left calc(100% - var(--background-x))',
-        filter: 'brightness(0.66) contrast(1.33) saturate(0.33) opacity(0.5)',
+        filter: 'brightness(0.85) contrast(1.1) saturate(0.6) opacity(0.25)',
         animation: 'pc-holo-bg 18s linear infinite',
         animationPlayState: 'running',
         mixBlendMode: 'color-dodge',
@@ -429,11 +429,11 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         overflow: 'hidden',
         backgroundImage: `radial-gradient(
       farthest-corner circle at var(--pointer-x) var(--pointer-y),
-      hsl(248, 25%, 80%) 12%,
-      hsla(207, 40%, 30%, 0.8) 90%
+      hsla(248, 25%, 80%, 0.5) 12%,
+      hsla(207, 40%, 30%, 0.3) 90%
     )`,
         mixBlendMode: 'overlay',
-        filter: 'brightness(0.8) contrast(1.2)',
+        filter: 'brightness(0.9) contrast(1.1) opacity(0.4)',
         zIndex: 4,
         gridArea: '1 / -1',
         borderRadius: cardRadius,
@@ -506,7 +506,6 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         <div
                             className="overflow-visible"
                             style={{
-                                mixBlendMode: 'luminosity',
                                 transform: 'translateZ(2px)',
                                 gridArea: '1 / -1',
                                 borderRadius: cardRadius,
@@ -516,7 +515,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                className="w-full absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out"
+                                className="w-[85%] absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out"
                                 src={avatarUrl}
                                 alt={`${name} avatar`}
                                 loading="lazy"
@@ -595,11 +594,11 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                                 pointerEvents: 'none'
                             }}
                         >
-                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '1rem' }}>
+                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '8px' }}>
                                 <h3
-                                    className="font-bold m-0 leading-tight text-center break-words max-w-full px-2"
+                                    className="font-bold m-0 leading-tight text-center whitespace-nowrap max-w-full px-2"
                                     style={{
-                                        fontSize: 'clamp(1.2rem, 5.5vw, 2.1rem)',
+                                        fontSize: 'clamp(1rem, 4.5vw, 1.7rem)',
                                         backgroundImage: 'linear-gradient(to bottom, #fff, #6f6fbe)',
                                         backgroundSize: '1em 1.5em',
                                         WebkitTextFillColor: 'transparent',
