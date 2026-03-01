@@ -52,9 +52,9 @@ export default function ContactPage() {
             {/* Main layout */}
             <div className="space-y-24">
                 {/* Pushkar Profile */}
-                <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-start lg:justify-center lg:gap-16">
+                <div className="flex flex-col items-center gap-10">
                     {/* Profile Card */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 w-full max-w-sm mx-auto">
                         <ProfileCard
                             name="Pushkar R Deshpande"
                             title="4th SEM EIE — BIT"
@@ -164,9 +164,9 @@ export default function ContactPage() {
                     </div>
 
                     {/* Hemsagar Profile */}
-                    <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-start lg:justify-center lg:gap-16">
+                    <div className="flex flex-col items-center gap-10">
                         {/* Profile Card */}
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 w-full max-w-sm mx-auto">
                             <ProfileCard
                                 name="Hemsagar B C"
                                 title="4th SEM EIE — BIT"

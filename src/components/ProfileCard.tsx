@@ -443,7 +443,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
     return (
         <div
             ref={wrapRef}
-            className={`relative touch-none ${className}`.trim()}
+            className={`relative ${className}`.trim()}
             style={{ perspective: '500px', transform: 'translate3d(0, 0, 0.1px)', ...cardStyle } as React.CSSProperties}
         >
             {behindGlowEnabled && (
@@ -595,11 +595,11 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                                 pointerEvents: 'none'
                             }}
                         >
-                            <div className="w-full absolute flex flex-col" style={{ top: '3em' }}>
+                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '2.5rem' }}>
                                 <h3
-                                    className="font-semibold m-0"
+                                    className="font-bold m-0 leading-tight text-center break-words max-w-[90%]"
                                     style={{
-                                        fontSize: 'min(5svh, 3em)',
+                                        fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
                                         backgroundImage: 'linear-gradient(to bottom, #fff, #6f6fbe)',
                                         backgroundSize: '1em 1.5em',
                                         WebkitTextFillColor: 'transparent',
@@ -610,12 +610,9 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                                     {name}
                                 </h3>
                                 <p
-                                    className="font-semibold whitespace-nowrap mx-auto w-min"
+                                    className="font-semibold text-center mt-2 max-w-[90%]"
                                     style={{
-                                        position: 'relative',
-                                        top: '-12px',
-                                        fontSize: '16px',
-                                        margin: '0 auto',
+                                        fontSize: '0.9rem',
                                         backgroundImage: 'linear-gradient(to bottom, #fff, #4a4ac0)',
                                         backgroundSize: '1em 1.5em',
                                         WebkitTextFillColor: 'transparent',
