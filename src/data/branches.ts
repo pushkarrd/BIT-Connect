@@ -7,6 +7,12 @@ export interface Branch {
 
 export const branches: Branch[] = [
     {
+        id: "electronics-instrumentation-engineering",
+        name: "Electronics and Instrumentation Engineering",
+        shortName: "EIE",
+        icon: "Gauge",
+    },
+    {
         id: "civil-engineering",
         name: "Civil Engineering",
         shortName: "CE",
@@ -35,12 +41,6 @@ export const branches: Branch[] = [
         name: "Computer Science and Engineering",
         shortName: "CSE",
         icon: "Monitor",
-    },
-    {
-        id: "electronics-instrumentation-engineering",
-        name: "Electronics and Instrumentation Engineering",
-        shortName: "EIE",
-        icon: "Gauge",
     },
     {
         id: "industrial-engineering-management",
