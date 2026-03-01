@@ -50,6 +50,27 @@ export default function CommunityPage() {
     const [newPostOpen, setNewPostOpen] = React.useState(false);
     const [activeBranch, setActiveBranch] = React.useState<string | null>(null);
 
+    React.useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const branch = params.get("branch");
+            if (branch) setActiveBranch(branch);
+        }
+    }, []);
+
+    const handleBranchFilter = (branchId: string | null) => {
+        setActiveBranch(branchId);
+        if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            if (branchId) {
+                url.searchParams.set("branch", branchId);
+            } else {
+                url.searchParams.delete("branch");
+            }
+            window.history.replaceState({}, "", url.toString());
+        }
+    };
+
     // Real-time Firestore listener — only fetch posts from last 60 days
     React.useEffect(() => {
         const sixtyDaysAgo = Timestamp.fromDate(
@@ -120,7 +141,7 @@ export default function CommunityPage() {
                             <Badge
                                 variant={activeBranch === null ? "default" : "outline"}
                                 className="shrink-0 cursor-pointer"
-                                onClick={() => setActiveBranch(null)}
+                                onClick={() => handleBranchFilter(null)}
                             >
                                 All Branches
                             </Badge>
@@ -130,7 +151,7 @@ export default function CommunityPage() {
                                     variant={activeBranch === b.id ? "default" : "outline"}
                                     className="shrink-0 cursor-pointer"
                                     onClick={() =>
-                                        setActiveBranch(activeBranch === b.id ? null : b.id)
+                                        handleBranchFilter(activeBranch === b.id ? null : b.id)
                                     }
                                 >
                                     {b.shortName}
@@ -142,7 +163,7 @@ export default function CommunityPage() {
             </FadeIn>
 
             {/* Posts Feed */}
-            <StaggerContainer key={activeBranch ?? "all"} delayChildren={0.3} staggerChildren={0.1} className="space-y-4">
+            <StaggerContainer key={`${activeBranch ?? "all"}-${loading ? "loading" : "loaded"}`} delayChildren={0.3} staggerChildren={0.1} className="space-y-4">
                 {loading ? (
                     Array.from({ length: 4 }).map((_, i) => <StaggerItem key={i}><PostSkeleton /></StaggerItem>)
                 ) : posts.length === 0 ? (

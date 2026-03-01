@@ -418,7 +418,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
                         {/* Uploader Alias */}
                         <Field>
-                            <FieldLabel htmlFor="alias">Uploader Alias</FieldLabel>
+                            <FieldLabel htmlFor="alias">
+                                Uploader Alias <span className="text-muted-foreground font-normal">(optional)</span>
+                            </FieldLabel>
                             <Input
                                 id="alias"
                                 placeholder='e.g. "Pushkar", "Sem 6 Survivor"'

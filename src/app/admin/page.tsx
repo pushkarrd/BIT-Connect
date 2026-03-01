@@ -72,6 +72,7 @@ function getFileIcon(fileName: string) {
 
 export default function AdminPage() {
     const [authenticated, setAuthenticated] = React.useState(false);
+    const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [pending, setPending] = React.useState<Resource[]>([]);
     const [approved, setApproved] = React.useState<Resource[]>([]);
@@ -81,11 +82,15 @@ export default function AdminPage() {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === ADMIN_PASSWORD) {
+        const isPushkar = email === "pushkardeshpande8055@gmail.com" && password === "Pushkar@BIT8055";
+        const isHemsagar = email === "hemsagarbc1@gmail.com" && password === "Hemsagar@BIT8055";
+        const isFallbackAdmin = password === ADMIN_PASSWORD;
+
+        if (isPushkar || isHemsagar || isFallbackAdmin) {
             setAuthenticated(true);
             sessionStorage.setItem("admin-auth", "true");
         } else {
-            toast.error("Wrong password");
+            toast.error("Invalid email or password");
         }
     };
 
@@ -250,6 +255,13 @@ export default function AdminPage() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleLogin} className="flex flex-col gap-3">
+                            <Input
+                                type="email"
+                                placeholder="Admin Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
                             <Input
                                 type="password"
                                 placeholder="Admin password"

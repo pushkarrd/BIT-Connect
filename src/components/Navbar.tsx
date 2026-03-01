@@ -244,6 +244,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
 
                 {/* Mobile Menu */}
                 <div className="flex items-center gap-2 md:hidden">
+                    <Button variant="outline" size="icon" onClick={() => setSearchOpen(!searchOpen)}>
+                        <Search className="h-4 w-4" />
+                    </Button>
                     <Button variant="outline" size="icon" onClick={onUploadClick}>
                         <Upload className="h-4 w-4" />
                     </Button>
@@ -261,20 +264,6 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                 </SheetTitle>
                             </SheetHeader>
                             <div className="mt-6 flex flex-col gap-1">
-                                {/* Mobile Search */}
-                                <div ref={searchRefMobile} className="relative mb-4">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Search resources..."
-                                        className="pl-9"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                    />
-                                    <div className="absolute top-full left-0 w-full z-50">
-                                        <SearchResultsList />
-                                    </div>
-                                </div>
-                                <Separator className="mb-2" />
                                 {navLinks.map((link) => (
                                     <Link
                                         key={link.href}
@@ -295,6 +284,34 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                     </Sheet>
                 </div>
             </div>
+
+            {/* Mobile Search Dropdown */}
+            {searchOpen && (
+                <div ref={searchRefMobile} className="absolute left-0 top-16 w-full border-b bg-background p-4 md:hidden shadow-sm animate-in slide-in-from-top-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder="Search resources..."
+                            className="pl-9 pr-9"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            autoFocus
+                        />
+                        <button
+                            onClick={() => {
+                                setSearchOpen(false);
+                                setSearchQuery("");
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                        <div className="absolute top-full left-0 w-full z-50 mt-1">
+                            <SearchResultsList />
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }

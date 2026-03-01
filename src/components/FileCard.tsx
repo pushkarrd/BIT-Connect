@@ -92,12 +92,19 @@ export function FileCard({
                 {/* Actions */}
                 <div className="flex w-full items-center justify-between">
                     <VoteButton resourceId={id} currentVotes={upvotes} />
-                    <Button variant="outline" size="sm" asChild>
-                        <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
-                            <Download className="mr-1.5 h-3.5 w-3.5" />
-                            Download
-                        </a>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                                Preview
+                            </a>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                            <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
+                                <Download className="mr-1.5 h-3.5 w-3.5" />
+                                Download
+                            </a>
+                        </Button>
+                    </div>
                 </div>
             </CardFooter>
         </Card>
