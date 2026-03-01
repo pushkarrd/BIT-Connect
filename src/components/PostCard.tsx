@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { db } from "@/lib/firebase";
+import { doc, deleteDoc } from "firebase/firestore";
+import { toast } from "sonner";
 import {
     Card,
     CardHeader,
@@ -19,6 +22,7 @@ import {
     User,
     Clock,
     Upload,
+    Trash2,
 } from "lucide-react";
 
 interface PostCardProps {
@@ -49,7 +53,29 @@ export function PostCard({
     timestamp,
 }: PostCardProps) {
     const [uploadOpen, setUploadOpen] = React.useState(false);
+    const [isAdmin, setIsAdmin] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState(false);
     const branchData = branches.find((b) => b.id === branch);
+
+    React.useEffect(() => {
+        if (typeof window !== "undefined") {
+            setIsAdmin(sessionStorage.getItem("admin-auth") === "true");
+        }
+    }, []);
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this post?")) return;
+        setIsDeleting(true);
+        try {
+            await deleteDoc(doc(db, "communityPosts", id));
+            toast.success("Post deleted successfully");
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            toast.error("Failed to delete post");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <Card>
@@ -73,11 +99,24 @@ export function PostCard({
                             )}
                         </div>
                     </div>
-                    {branchData && (
-                        <Badge variant="secondary" className="shrink-0 text-xs">
-                            {branchData.shortName}
-                        </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {branchData && (
+                            <Badge variant="secondary" className="shrink-0 text-xs">
+                                {branchData.shortName}
+                            </Badge>
+                        )}
+                        {isAdmin && (
+                            <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-6 w-6 shrink-0"
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                            >
+                                <Trash2 className="h-3 w-3" />
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </CardHeader>
 
