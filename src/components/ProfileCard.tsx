@@ -377,12 +377,14 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         onContactClick?.();
     }, [onContactClick]);
 
+    const isPushkar = name.includes('Pushkar');
+
     const shineStyle: React.CSSProperties = {
         maskImage: 'var(--icon)',
         maskRepeat: 'repeat',
         maskSize: '150%',
         maskPosition: 'top calc(200% - (var(--background-y) * 5)) left calc(100% - var(--background-x))',
-        filter: 'brightness(0.85) contrast(1.1) saturate(0.6) opacity(0.25)',
+        filter: isPushkar ? 'brightness(0.66) contrast(1.33) saturate(0.33) opacity(0.5)' : 'brightness(0.85) contrast(1.1) saturate(0.6) opacity(0.25)',
         animation: 'pc-holo-bg 18s linear infinite',
         animationPlayState: 'running',
         mixBlendMode: 'color-dodge',
@@ -427,13 +429,17 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
     const glareStyle: React.CSSProperties = {
         transform: 'translate3d(0, 0, 1.1px)',
         overflow: 'hidden',
-        backgroundImage: `radial-gradient(
+        backgroundImage: isPushkar ? `radial-gradient(
+      farthest-corner circle at var(--pointer-x) var(--pointer-y),
+      hsl(248, 25%, 80%) 12%,
+      hsla(207, 40%, 30%, 0.8) 90%
+    )` : `radial-gradient(
       farthest-corner circle at var(--pointer-x) var(--pointer-y),
       hsla(248, 25%, 80%, 0.5) 12%,
       hsla(207, 40%, 30%, 0.3) 90%
     )`,
         mixBlendMode: 'overlay',
-        filter: 'brightness(0.9) contrast(1.1) opacity(0.4)',
+        filter: isPushkar ? 'brightness(0.8) contrast(1.2)' : 'brightness(0.9) contrast(1.1) opacity(0.4)',
         zIndex: 4,
         gridArea: '1 / -1',
         borderRadius: cardRadius,
@@ -506,6 +512,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         <div
                             className="overflow-visible"
                             style={{
+                                mixBlendMode: isPushkar ? 'luminosity' : 'normal',
                                 transform: 'translateZ(2px)',
                                 gridArea: '1 / -1',
                                 borderRadius: cardRadius,
