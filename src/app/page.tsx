@@ -32,6 +32,7 @@ import {
   FileText,
   type LucideIcon,
 } from "lucide-react";
+import { AnimatedLetters, FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 
 const iconMap: Record<string, LucideIcon> = {
   Building2,
@@ -56,73 +57,91 @@ export default function HomePage() {
       <section className="relative overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           <div className="flex flex-col items-center text-center">
-            <Badge variant="secondary" className="mb-4 text-base px-6 py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 font-semibold shadow-sm">
-              By the students, for the students
-            </Badge>
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              Your{" "}
-              <span className="text-primary">Academic Resource Hub</span> at
-              BIT
-            </h1>
-            <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-              Instantly access notes, internal question papers, and SEE PYQs for
-              all 13 UG branches. No sign-up required — just browse and
-              download.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Button size="lg" asChild>
-                <a href="#browse">
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  Browse Resources
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/community">
-                  <Users className="mr-2 h-4 w-4" />
-                  Community Board
-                </Link>
-              </Button>
-              <Button size="lg" variant="secondary" className="bg-primary/5 border hover:bg-primary/10" asChild>
-                <Link href="/calculator">
-                  <Calculator className="mr-2 h-4 w-4" />
-                  SEE Grade Calculator
-                </Link>
-              </Button>
-            </div>
+            <FadeIn delay={0.1} direction="down">
+              <Badge variant="secondary" className="mb-4 text-base px-6 py-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 font-semibold shadow-sm">
+                <AnimatedLetters text="By the students, for the students" delay={0.2} />
+              </Badge>
+            </FadeIn>
+            <FadeIn delay={0.3} direction="up">
+              <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+                Your{" "}
+                <span className="text-primary">Academic Resource Hub</span> at
+                BIT
+              </h1>
+            </FadeIn>
+            <FadeIn delay={0.5} direction="up">
+              <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+                Instantly access notes, internal question papers, and SEE PYQs for
+                all 13 UG branches. No sign-up required — just browse and
+                download.
+              </p>
+            </FadeIn>
+            <StaggerContainer delayChildren={0.7} staggerChildren={0.1} className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <StaggerItem>
+                <Button size="lg" asChild>
+                  <a href="#browse">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Browse Resources
+                  </a>
+                </Button>
+              </StaggerItem>
+              <StaggerItem>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/community">
+                    <Users className="mr-2 h-4 w-4" />
+                    Community Board
+                  </Link>
+                </Button>
+              </StaggerItem>
+              <StaggerItem>
+                <Button size="lg" variant="secondary" className="bg-primary/5 border hover:bg-primary/10" asChild>
+                  <Link href="/calculator">
+                    <Calculator className="mr-2 h-4 w-4" />
+                    SEE Grade Calculator
+                  </Link>
+                </Button>
+              </StaggerItem>
+            </StaggerContainer>
 
             {/* Stats */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <span>
-                  <strong className="text-foreground">13</strong> UG Branches
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" />
-                <span>
-                  Access <strong className="text-foreground">Notes</strong>
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <span>
-                  <strong className="text-foreground">PYQs</strong> and IA Papers
-                </span>
-              </div>
-            </div>
+            <StaggerContainer delayChildren={1.0} staggerChildren={0.1} className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
+              <StaggerItem>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span>
+                    <strong className="text-foreground">13</strong> UG Branches
+                  </span>
+                </div>
+              </StaggerItem>
+              <StaggerItem>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span>
+                    Access <strong className="text-foreground">Notes</strong>
+                  </span>
+                </div>
+              </StaggerItem>
+              <StaggerItem>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span>
+                    <strong className="text-foreground">PYQs</strong> and IA Papers
+                  </span>
+                </div>
+              </StaggerItem>
+            </StaggerContainer>
           </div>
         </div>
 
         {/* Background grid pattern */}
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-      </section>
+      </section >
 
       {/* Browse Resource Vault */}
-      <section id="browse" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      < section id="browse" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8" >
 
         {/* 1st Year Section */}
-        <div className="mb-12">
+        < div className="mb-12" >
           <div className="mb-6">
             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
               <GraduationCap className="h-6 w-6 text-primary" />
@@ -156,17 +175,17 @@ export default function HomePage() {
               </CardHeader>
             </Card>
           </Link>
-        </div>
+        </div >
 
         {/* Branch Grid */}
-        <div className="mb-8">
+        < div className="mb-8" >
           <h2 className="text-2xl font-bold tracking-tight">
             Select Your Branch
           </h2>
           <p className="mt-1 text-muted-foreground">
             Choose your department to browse study materials (Sem 3–8).
           </p>
-        </div>
+        </div >
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {branches.map((branch) => {
@@ -198,10 +217,10 @@ export default function HomePage() {
             );
           })}
         </div>
-      </section>
+      </section >
 
       {/* About Section */}
-      <section id="about" className="border-t bg-gradient-to-b from-background to-primary/5">
+      < section id="about" className="border-t bg-gradient-to-b from-background to-primary/5" >
         <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">About Us</Badge>
@@ -269,7 +288,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }

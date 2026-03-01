@@ -19,6 +19,7 @@ import {
     Timestamp,
 } from "firebase/firestore";
 import { MessageSquarePlus, Inbox, Filter } from "lucide-react";
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 
 interface Post {
     id: string;
@@ -95,89 +96,96 @@ export default function CommunityPage() {
     return (
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
             {/* Header */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                        Community Board
-                    </h1>
-                    <p className="mt-1 text-muted-foreground">
-                        Post resource requests, ask questions, and help your peers.
-                    </p>
+            <FadeIn delay={0.1} direction="down">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                            Community Board
+                        </h1>
+                        <p className="mt-1 text-muted-foreground">
+                            Post resource requests, ask questions, and help your peers.
+                        </p>
+                    </div>
+                    <Button onClick={() => setNewPostOpen(true)} className="shrink-0">
+                        <MessageSquarePlus className="mr-1.5 h-4 w-4" />
+                        New Request
+                    </Button>
                 </div>
-                <Button onClick={() => setNewPostOpen(true)} className="shrink-0">
-                    <MessageSquarePlus className="mr-1.5 h-4 w-4" />
-                    New Request
-                </Button>
-            </div>
+            </FadeIn>
 
             {/* Branch Filters */}
-            <div className="mb-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <Filter className="h-3.5 w-3.5" />
-                    Filter by branch
-                </div>
-                <ScrollArea className="w-full">
-                    <div className="flex gap-2 pb-2">
-                        <Badge
-                            variant={activeBranch === null ? "default" : "outline"}
-                            className="shrink-0 cursor-pointer"
-                            onClick={() => setActiveBranch(null)}
-                        >
-                            All Branches
-                        </Badge>
-                        {branches.map((b) => (
-                            <Badge
-                                key={b.id}
-                                variant={activeBranch === b.id ? "default" : "outline"}
-                                className="shrink-0 cursor-pointer"
-                                onClick={() =>
-                                    setActiveBranch(activeBranch === b.id ? null : b.id)
-                                }
-                            >
-                                {b.shortName}
-                            </Badge>
-                        ))}
+            <FadeIn delay={0.2} direction="up">
+                <div className="mb-6">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <Filter className="h-3.5 w-3.5" />
+                        Filter by branch
                     </div>
-                </ScrollArea>
-            </div>
+                    <ScrollArea className="w-full">
+                        <div className="flex gap-2 pb-2">
+                            <Badge
+                                variant={activeBranch === null ? "default" : "outline"}
+                                className="shrink-0 cursor-pointer"
+                                onClick={() => setActiveBranch(null)}
+                            >
+                                All Branches
+                            </Badge>
+                            {branches.map((b) => (
+                                <Badge
+                                    key={b.id}
+                                    variant={activeBranch === b.id ? "default" : "outline"}
+                                    className="shrink-0 cursor-pointer"
+                                    onClick={() =>
+                                        setActiveBranch(activeBranch === b.id ? null : b.id)
+                                    }
+                                >
+                                    {b.shortName}
+                                </Badge>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </div>
+            </FadeIn>
 
             {/* Posts Feed */}
-            <div className="space-y-4">
+            <StaggerContainer delayChildren={0.3} staggerChildren={0.1} className="space-y-4">
                 {loading ? (
-                    Array.from({ length: 4 }).map((_, i) => <PostSkeleton key={i} />)
+                    Array.from({ length: 4 }).map((_, i) => <StaggerItem key={i}><PostSkeleton /></StaggerItem>)
                 ) : posts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                            <Inbox className="h-8 w-8 text-muted-foreground" />
+                    <FadeIn delay={0.4}>
+                        <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                                <Inbox className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                            <h3 className="mt-4 text-lg font-semibold">No posts yet</h3>
+                            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                                {activeBranch
+                                    ? "No posts found for this branch. Try a different filter or create a new request!"
+                                    : "Be the first to post a resource request!"}
+                            </p>
+                            <Button
+                                className="mt-4"
+                                onClick={() => setNewPostOpen(true)}
+                            >
+                                <MessageSquarePlus className="mr-1.5 h-4 w-4" />
+                                Create First Post
+                            </Button>
                         </div>
-                        <h3 className="mt-4 text-lg font-semibold">No posts yet</h3>
-                        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                            {activeBranch
-                                ? "No posts found for this branch. Try a different filter or create a new request!"
-                                : "Be the first to post a resource request!"}
-                        </p>
-                        <Button
-                            className="mt-4"
-                            onClick={() => setNewPostOpen(true)}
-                        >
-                            <MessageSquarePlus className="mr-1.5 h-4 w-4" />
-                            Create First Post
-                        </Button>
-                    </div>
+                    </FadeIn>
                 ) : (
                     posts.map((post) => (
-                        <PostCard
-                            key={post.id}
-                            id={post.id}
-                            title={post.title}
-                            body={post.body}
-                            branch={post.branch}
-                            authorAlias={post.authorAlias}
-                            timestamp={post.timestamp}
-                        />
+                        <StaggerItem key={post.id}>
+                            <PostCard
+                                id={post.id}
+                                title={post.title}
+                                body={post.body}
+                                branch={post.branch}
+                                authorAlias={post.authorAlias}
+                                timestamp={post.timestamp}
+                            />
+                        </StaggerItem>
                     ))
                 )}
-            </div>
+            </StaggerContainer>
 
             {/* New Post Modal */}
             <NewPostModal open={newPostOpen} onOpenChange={setNewPostOpen} />
