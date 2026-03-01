@@ -384,7 +384,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         maskRepeat: 'repeat',
         maskSize: '150%',
         maskPosition: 'top calc(200% - (var(--background-y) * 5)) left calc(100% - var(--background-x))',
-        filter: isPushkar ? 'brightness(0.66) contrast(1.33) saturate(0.33) opacity(0.5)' : 'brightness(0.85) contrast(1.1) saturate(0.6) opacity(0.25)',
+        filter: isPushkar ? 'brightness(0.7) contrast(1.2) saturate(0.5) opacity(0.35)' : 'brightness(0.85) contrast(1.1) saturate(0.6) opacity(0.25)',
         animation: 'pc-holo-bg 18s linear infinite',
         animationPlayState: 'running',
         mixBlendMode: 'color-dodge',
@@ -431,7 +431,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         overflow: 'hidden',
         backgroundImage: isPushkar ? `radial-gradient(
       farthest-corner circle at var(--pointer-x) var(--pointer-y),
-      hsl(248, 25%, 80%) 12%,
+      hsla(248, 25%, 70%, 0.7) 12%,
       hsla(207, 40%, 30%, 0.8) 90%
     )` : `radial-gradient(
       farthest-corner circle at var(--pointer-x) var(--pointer-y),
@@ -439,7 +439,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
       hsla(207, 40%, 30%, 0.3) 90%
     )`,
         mixBlendMode: 'overlay',
-        filter: isPushkar ? 'brightness(0.8) contrast(1.2)' : 'brightness(0.9) contrast(1.1) opacity(0.4)',
+        filter: isPushkar ? 'brightness(0.7) contrast(1.1)' : 'brightness(0.9) contrast(1.1) opacity(0.4)',
         zIndex: 4,
         gridArea: '1 / -1',
         borderRadius: cardRadius,
@@ -522,7 +522,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                className="w-[85%] absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out"
+                                className={`${isPushkar ? 'w-[92%]' : 'w-[85%]'} absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out`}
                                 src={avatarUrl}
                                 alt={`${name} avatar`}
                                 loading="lazy"
