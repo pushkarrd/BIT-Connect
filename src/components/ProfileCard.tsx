@@ -522,7 +522,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                className={`${isPushkar ? 'w-[92%]' : 'w-[85%]'} absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out`}
+                                className={`${isPushkar ? 'w-[105%]' : 'w-[85%]'} absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out`}
                                 src={avatarUrl}
                                 alt={`${name} avatar`}
                                 loading="lazy"
