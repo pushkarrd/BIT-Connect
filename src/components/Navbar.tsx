@@ -58,6 +58,28 @@ export function Navbar({ onUploadClick }: NavbarProps) {
     const [searchResults, setSearchResults] = React.useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = React.useState(false);
 
+    // Ref for click-outside
+    const searchRefDesktop = React.useRef<HTMLDivElement>(null);
+    const searchRefMobile = React.useRef<HTMLDivElement>(null);
+
+    // Handle click outside to close search
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const isClickInsideDesktop = searchRefDesktop.current?.contains(event.target as Node);
+            const isClickInsideMobile = searchRefMobile.current?.contains(event.target as Node);
+
+            if (!isClickInsideDesktop && !isClickInsideMobile) {
+                setSearchOpen(false);
+                setSearchQuery("");
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     React.useEffect(() => {
         if (!searchQuery.trim()) {
             setSearchResults([]);
@@ -162,7 +184,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                 <div className="hidden items-center gap-2 md:flex">
                     {/* Search */}
                     {searchOpen ? (
-                        <div className="relative flex items-center">
+                        <div ref={searchRefDesktop} className="relative flex items-center">
                             <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search notes, papers..."
@@ -226,7 +248,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                             </SheetHeader>
                             <div className="mt-6 flex flex-col gap-1">
                                 {/* Mobile Search */}
-                                <div className="relative mb-4">
+                                <div ref={searchRefMobile} className="relative mb-4">
                                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         placeholder="Search resources..."
