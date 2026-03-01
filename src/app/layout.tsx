@@ -30,13 +30,18 @@ export const metadata: Metadata = {
     "PYQs",
     "study materials",
   ],
+
+  // ✅ Google Search Console Verification
+  verification: {
+    google: "epyCCpHXTshx6YlvN7B7JIblabJcuvyUi1K_K0W7hB8",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
