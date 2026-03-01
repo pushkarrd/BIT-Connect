@@ -53,20 +53,20 @@ export function FileCard({
     return (
         <Card className="group transition-all hover:shadow-sm">
             <CardHeader>
-                <CardAction>
-                    <Badge variant="secondary" className="text-xs">
-                        {fileName.split(".").pop()?.toUpperCase()}
-                    </Badge>
-                </CardAction>
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
                         {getFileIcon(fileName)}
                     </div>
                     <div className="flex min-w-0 flex-col gap-0.5">
-                        <CardTitle className="truncate text-sm">{fileName}</CardTitle>
-                        <CardDescription className="text-xs">{subject}</CardDescription>
+                        <CardTitle className="truncate text-sm pr-2">{fileName}</CardTitle>
+                        <CardDescription className="text-xs truncate">{subject}</CardDescription>
                     </div>
                 </div>
+                <CardAction>
+                    <Badge variant="secondary" className="text-xs shrink-0">
+                        {fileName.split(".").pop()?.toUpperCase() || "FILE"}
+                    </Badge>
+                </CardAction>
             </CardHeader>
 
             <CardFooter className="flex-col gap-3">
