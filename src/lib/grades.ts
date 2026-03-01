@@ -3,7 +3,13 @@
  *
  * SEE exam is conducted for 100 marks and scaled down to 50.
  * Final Total = CIE (out of 50) + (SEE_raw / 100) * 50
+ *
+ * VTU Passing Rule: A student must score a minimum of 36 out of 100
+ * in the SEE exam to pass, regardless of total marks.
  */
+
+/** Minimum SEE raw marks required to pass under VTU rules */
+export const MIN_SEE_RAW = 36;
 
 export type GradeLetter = "O" | "A+" | "A" | "B+" | "B" | "C" | "P";
 
@@ -26,9 +32,13 @@ export const GRADE_MAP: GradeInfo[] = [
 
 export const CREDIT_OPTIONS = [0, 1, 3, 4] as const;
 
-export type CalculationStatus = "possible" | "not-possible" | "already-secured";
+export type CalculationStatus =
+  | "possible"
+  | "not-possible"
+  | "min-see-required";
 
 export interface CalculationResult {
+  /** The final required SEE marks (out of 100), already enforcing the 36-min rule */
   requiredSEERaw: number;
   status: CalculationStatus;
   gradePoints: number;
@@ -47,6 +57,9 @@ export function getGradeInfo(grade: GradeLetter): GradeInfo {
 /**
  * Calculate the required raw SEE marks (out of 100) to achieve
  * the desired grade, given finalized CIE marks (out of 50).
+ *
+ * Enforces VTU minimum SEE rule: even if CIE alone meets the grade,
+ * a minimum of 36/100 in SEE is mandatory to pass.
  */
 export function calculateRequiredSEE(
   cie: number,
@@ -60,18 +73,22 @@ export function calculateRequiredSEE(
   // requiredSEE_raw = (requiredScaled / 50) * 100
   const requiredRaw = (requiredScaled / 50) * 100;
 
+  // Enforce VTU minimum: finalRequired = max(requiredRaw, 36)
+  const finalRequired = Math.max(requiredRaw, MIN_SEE_RAW);
+
   let status: CalculationStatus;
 
-  if (requiredRaw <= 0) {
-    status = "already-secured";
-  } else if (requiredRaw > 100) {
+  if (finalRequired > 100) {
     status = "not-possible";
+  } else if (requiredRaw <= 0) {
+    // CIE alone meets the grade, but 36 SEE marks are still mandatory
+    status = "min-see-required";
   } else {
     status = "possible";
   }
 
   return {
-    requiredSEERaw: Math.round(requiredRaw * 100) / 100, // 2 decimal places
+    requiredSEERaw: Math.round(finalRequired * 100) / 100, // 2 decimal places
     status,
     gradePoints: points,
     grade,

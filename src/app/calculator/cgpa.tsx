@@ -24,14 +24,16 @@ import {
   type CalculationResult,
   GRADE_MAP,
   CREDIT_OPTIONS,
+  MIN_SEE_RAW,
   calculateRequiredSEE,
 } from "@/lib/grades";
 import {
   Calculator,
   CheckCircle2,
   XCircle,
-  ShieldCheck,
+  AlertTriangle,
   RotateCcw,
+  Info,
 } from "lucide-react";
 
 export default function CGPACalculator() {
@@ -189,7 +191,7 @@ export default function CGPACalculator() {
             <CardHeader>
               <CardTitle className="text-base">Result</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-4">
               <div className="grid gap-4 sm:grid-cols-3">
                 {/* Status */}
                 <div className="flex flex-col items-center gap-2 rounded-lg border p-4 text-center">
@@ -199,33 +201,31 @@ export default function CGPACalculator() {
                   {result.status === "not-possible" && (
                     <XCircle className="h-6 w-6 text-destructive" />
                   )}
-                  {result.status === "already-secured" && (
-                    <ShieldCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  {result.status === "min-see-required" && (
+                    <AlertTriangle className="h-6 w-6 text-amber-500 dark:text-amber-400" />
                   )}
                   <span className="text-xs text-muted-foreground">Status</span>
                   <Badge
                     variant={
                       result.status === "possible"
                         ? "default"
-                        : result.status === "already-secured"
+                        : result.status === "min-see-required"
                           ? "secondary"
                           : "destructive"
                     }
                   >
                     {result.status === "possible" && "Possible"}
                     {result.status === "not-possible" && "Not Possible"}
-                    {result.status === "already-secured" && "Already Secured"}
+                    {result.status === "min-see-required" && "Min SEE Required"}
                   </Badge>
                 </div>
 
                 {/* Required SEE Marks */}
                 <div className="flex flex-col items-center gap-2 rounded-lg border p-4 text-center">
                   <span className="text-2xl font-bold">
-                    {result.status === "already-secured"
-                      ? "0"
-                      : result.status === "not-possible"
-                        ? "—"
-                        : result.requiredSEERaw}
+                    {result.status === "not-possible"
+                      ? "—"
+                      : result.requiredSEERaw}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     Required SEE Marks (out of 100)
@@ -240,6 +240,24 @@ export default function CGPACalculator() {
                   </span>
                 </div>
               </div>
+
+              {/* Min-SEE helper text */}
+              {result.status === "min-see-required" && (
+                <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    Grade requirement already met by CIE, but a minimum of{" "}
+                    <strong>{MIN_SEE_RAW} marks</strong> in SEE (out of 100) is
+                    mandatory to pass under VTU rules.
+                  </span>
+                </div>
+              )}
+
+              {/* General VTU rule note */}
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Info className="h-3.5 w-3.5 shrink-0" />
+                VTU requires a minimum of {MIN_SEE_RAW}/100 in SEE to pass, regardless of total marks.
+              </p>
             </CardContent>
           </Card>
         )}
