@@ -522,14 +522,14 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                className={`${isPushkar ? 'w-[105%]' : 'w-[85%]'} absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out`}
+                                className={`${isPushkar ? 'w-[165%]' : 'w-[85%]'} absolute left-1/2 bottom-[-10px] will-change-transform transition-transform duration-[120ms] ease-out`}
                                 src={avatarUrl}
                                 alt={`${name} avatar`}
                                 loading="lazy"
                                 style={{
                                     transformOrigin: '50% 100%',
                                     transform:
-                                        'translateX(calc(-50% + (var(--pointer-from-left) - 0.5) * 6px)) translateZ(0) scaleY(calc(1 + (var(--pointer-from-top) - 0.5) * 0.02)) scaleX(calc(1 + (var(--pointer-from-left) - 0.5) * 0.01))',
+                                        'translateX(calc(-50% + (var(--pointer-from-left) - 0.5) * 8px)) translateZ(0) scaleY(calc(1 + (var(--pointer-from-top) - 0.5) * 0.02)) scaleX(calc(1 + (var(--pointer-from-left) - 0.5) * 0.01))',
                                     borderRadius: cardRadius,
                                     backfaceVisibility: 'hidden'
                                 }}
