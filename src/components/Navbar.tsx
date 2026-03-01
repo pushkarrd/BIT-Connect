@@ -36,6 +36,8 @@ import {
     GraduationCap,
 } from "lucide-react";
 
+import Image from "next/image";
+
 interface NavbarProps {
     onUploadClick: () => void;
 }
@@ -165,14 +167,26 @@ export function Navbar({ onUploadClick }: NavbarProps) {
         <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                        <GraduationCap className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <span className="text-lg font-bold tracking-tight">
-                        BIT <span className="text-primary">Connect</span>
-                    </span>
-                </Link>
+                <div className="flex items-center gap-3">
+                    <Link href="/" className="flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                            <GraduationCap className="h-5 w-5 text-primary-foreground" />
+                        </div>
+                        <span className="text-lg font-bold tracking-tight">
+                            BIT <span className="text-primary">Connect</span>
+                        </span>
+                    </Link>
+
+                    <Separator orientation="vertical" className="h-8 bg-zinc-300 dark:bg-zinc-700" />
+
+                    <Image
+                        src="/BIT.png"
+                        alt="BIT Logo"
+                        width={36}
+                        height={36}
+                        className="object-contain"
+                    />
+                </div>
 
                 {/* Desktop Navigation */}
                 <NavigationMenu className="hidden md:flex">
