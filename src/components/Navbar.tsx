@@ -63,7 +63,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
     const searchRefDesktop = React.useRef<HTMLDivElement>(null);
     const searchRefMobile = React.useRef<HTMLDivElement>(null);
 
-    // Handle click outside to close search
+    // Handle click outside to close search and scroll to close
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const isClickInsideDesktop = searchRefDesktop.current?.contains(event.target as Node);
@@ -75,11 +75,23 @@ export function Navbar({ onUploadClick }: NavbarProps) {
             }
         };
 
+        const handleScroll = () => {
+            // Only close if it's open, to prevent unnecessary state updates
+            if (searchOpen) {
+                setSearchOpen(false);
+                setSearchQuery("");
+            }
+        };
+
         document.addEventListener("mousedown", handleClickOutside);
+        // Use capture phase for scroll to detect scrolling on any element, not just window
+        window.addEventListener("scroll", handleScroll, true);
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener("scroll", handleScroll, true);
         };
-    }, []);
+    }, [searchOpen]);
 
     React.useEffect(() => {
         if (!searchQuery.trim()) {
