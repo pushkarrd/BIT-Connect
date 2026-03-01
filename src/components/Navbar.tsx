@@ -45,6 +45,79 @@ export function Navbar({ onUploadClick }: NavbarProps) {
     const [searchQuery, setSearchQuery] = React.useState("");
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
+    // Search state
+    interface SearchResult {
+        id: string;
+        fileName: string;
+        subject: string;
+        category: string;
+        locationLabel: string;
+        shortTag: string;
+        linkUrl: string;
+    }
+    const [searchResults, setSearchResults] = React.useState<SearchResult[]>([]);
+    const [isSearching, setIsSearching] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!searchQuery.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setSearchResults(data.results || []);
+                }
+            } catch (error) {
+                console.error("Search error:", error);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const SearchResultsList = () => {
+        if (searchQuery.trim().length === 0) return null;
+
+        return (
+            <div className="mt-2 w-full rounded-md border bg-popover text-popover-foreground shadow-md p-2 max-h-[300px] overflow-y-auto z-50">
+                {isSearching ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">Searching...</div>
+                ) : searchResults.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">No resources found</div>
+                ) : (
+                    <div className="flex flex-col gap-1">
+                        {searchResults.map((result) => (
+                            <Link
+                                key={result.id}
+                                href={result.linkUrl}
+                                onClick={() => {
+                                    setSearchOpen(false);
+                                    setMobileOpen(false);
+                                    setSearchQuery("");
+                                }}
+                                className="flex flex-col gap-1 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                            >
+                                <div className="font-medium line-clamp-1">{result.fileName}</div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span className="truncate max-w-[120px]">{result.subject}</span>
+                                    <span>•</span>
+                                    <span className="text-primary truncate">{result.locationLabel}</span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const navLinks = [
         { href: "/", label: "Resource Vault", icon: BookOpen },
         { href: "/community", label: "Community", icon: MessageSquare },
@@ -107,6 +180,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                             >
                                 <X className="h-4 w-4" />
                             </button>
+                            <div className="absolute top-full right-0 w-[350px]">
+                                <SearchResultsList />
+                            </div>
                         </div>
                     ) : (
                         <Tooltip>
@@ -158,6 +234,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
+                                    <div className="absolute top-full left-0 w-full z-50">
+                                        <SearchResultsList />
+                                    </div>
                                 </div>
                                 <Separator className="mb-2" />
                                 {navLinks.map((link) => (
