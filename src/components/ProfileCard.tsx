@@ -595,7 +595,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                                 pointerEvents: 'none'
                             }}
                         >
-                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '2.5rem' }}>
+                            <div className="w-full absolute flex flex-col items-center justify-center px-4" style={{ top: '1.5rem' }}>
                                 <h3
                                     className="font-bold m-0 leading-tight text-center break-words max-w-[90%]"
                                     style={{
