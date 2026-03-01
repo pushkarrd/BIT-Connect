@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface NavbarProps {
     onUploadClick: () => void;
@@ -249,6 +250,8 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                         </Tooltip>
                     )}
 
+                    <ThemeToggle />
+
                     {/* Upload CTA */}
                     <Button onClick={onUploadClick}>
                         <Upload className="mr-1.5 h-4 w-4" />
@@ -293,6 +296,12 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                         {link.label}
                                     </Link>
                                 ))}
+                            </div>
+                            <div className="mt-auto pt-6 px-1">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-muted-foreground">Appearance</span>
+                                    <ThemeToggle />
+                                </div>
                             </div>
                         </SheetContent>
                     </Sheet>
