@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 // Route segment config
-export const runtime = "edge";
+// (Removed Edge runtime as it causes Vercel internal errors during deploy outputs)
 
 // Image metadata
 export const size = {
