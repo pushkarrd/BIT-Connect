@@ -1,4 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as admin from "firebase-admin";
+
+// Initialize Firebase Admin SDK if not already initialized
+if (!admin.apps.length) {
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                // Replace escaped newlines for actual multiline private key parsing
+                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            }),
+        });
+    } catch (error) {
+        console.error("Firebase Admin Initialization Error", error);
+    }
+}
 
 // Using Official Meta WhatsApp Cloud API (which powers Botpress/BotExpress and other official clients)
 // You get 1,000 free notifications per month without risk of API downtime.
@@ -52,10 +69,39 @@ export async function POST(req: NextRequest) {
 
         if (!response.ok) {
             console.error("WhatsApp API error:", await response.text());
-            return NextResponse.json(
-                { success: false, reason: "WhatsApp API error" },
-                { status: 500 }
-            );
+            // Don't fail the whole request just because WhatsApp failed, we still want to try FCM Push
+        }
+
+        // 2) Send FCM Web Push Notification to Admins
+        try {
+            if (admin.apps.length > 0) {
+                const db = admin.firestore();
+                const tokensSnapshot = await db.collection("adminTokens").get();
+
+                const tokens: string[] = [];
+                tokensSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.token) tokens.push(data.token);
+                });
+
+                if (tokens.length > 0) {
+                    await admin.messaging().sendEachForMulticast({
+                        tokens,
+                        notification: {
+                            title: "New Upload Pending Approval 📥",
+                            body: `${fileName} uploaded by ${uploaderAlias}.`,
+                        },
+                        webpush: {
+                            fcmOptions: {
+                                link: `${APP_URL}/admin`,
+                            },
+                        },
+                    });
+                    console.log(`Sent Web Push to ${tokens.length} admin devices.`);
+                }
+            }
+        } catch (fcmError) {
+            console.error("FCM Push Error:", fcmError);
         }
 
         return NextResponse.json({ success: true });

@@ -11,7 +11,10 @@ import {
     doc,
     updateDoc,
     deleteDoc,
+    setDoc,
 } from "firebase/firestore";
+import { messaging } from "@/lib/firebase";
+import { getToken } from "firebase/messaging";
 import { branches } from "@/data/branches";
 import {
     Card,
@@ -43,6 +46,7 @@ import {
     Inbox,
     LogOut,
     Trash2,
+    Bell,
 } from "lucide-react";
 
 interface Resource {
@@ -238,6 +242,41 @@ export default function AdminPage() {
         setActioningId(null);
     };
 
+    const subscribeToPush = async () => {
+        try {
+            const msg = messaging();
+            if (!msg) {
+                toast.error("Push notifications are not supported in this browser.");
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                toast.error("You blocked notification permissions.");
+                return;
+            }
+
+            const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+            if (!vapidKey) {
+                toast.error("VAPID Key missing. Please check your .env variables.");
+                return;
+            }
+
+            const token = await getToken(msg, { vapidKey });
+            if (token) {
+                await setDoc(doc(db, "adminTokens", token), {
+                    token,
+                    environment: "production",
+                    updatedAt: new Date(),
+                });
+                toast.success("Subscribed to push notifications!");
+            }
+        } catch (error) {
+            console.error("FCM Token error:", error);
+            toast.error("Failed to generate FCM token.");
+        }
+    };
+
     // Login screen
     if (!authenticated) {
         return (
@@ -428,17 +467,27 @@ export default function AdminPage() {
                         Review, approve, and manage uploaded resources.
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                        sessionStorage.removeItem("admin-auth");
-                        setAuthenticated(false);
-                    }}
-                >
-                    <LogOut className="mr-1.5 h-3.5 w-3.5" />
-                    Logout
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={subscribeToPush}
+                    >
+                        <Bell className="mr-1.5 h-3.5 w-3.5" />
+                        Enable Drop Alerts
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            sessionStorage.removeItem("admin-auth");
+                            setAuthenticated(false);
+                        }}
+                    >
+                        <LogOut className="mr-1.5 h-3.5 w-3.5" />
+                        Logout
+                    </Button>
+                </div>
             </div>
 
             <Separator className="mb-6" />
