@@ -61,7 +61,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     const [category, setCategory] = React.useState("");
     const [subject, setSubject] = React.useState("");
     const [alias, setAlias] = React.useState("");
-    const [file, setFile] = React.useState<File | null>(null);
+    const [files, setFiles] = React.useState<File[]>([]);
     const [uploading, setUploading] = React.useState(false);
     const [progress, setProgress] = React.useState(0);
 
@@ -74,37 +74,42 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         setCategory("");
         setSubject("");
         setAlias("");
-        setFile(null);
+        setFiles([]);
         setProgress(0);
         setUploading(false);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (!selectedFile) return;
+        const selectedFiles = Array.from(e.target.files || []);
+        if (selectedFiles.length === 0) return;
 
-        if (!ALLOWED_TYPES.includes(selectedFile.type) && !selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.doc')) {
-            toast.error("Invalid file type", {
-                description: "Only PDF, PNG, JPG, and DOCX files are allowed.",
-            });
-            return;
+        let validFiles: File[] = [];
+        for (const selectedFile of selectedFiles) {
+            if (!ALLOWED_TYPES.includes(selectedFile.type) && !selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.doc')) {
+                toast.error("Invalid file type", {
+                    description: "Only PDF, PNG, JPG, and DOCX files are allowed.",
+                });
+                return;
+            }
+
+            if (selectedFile.size > MAX_SIZE) {
+                toast.error("File too large", {
+                    description: "Maximum file size is 50MB.",
+                });
+                return;
+            }
+
+            if (selectedFile.size < MIN_SIZE) {
+                toast.error("File too small", {
+                    description: "File seems to be empty or too small.",
+                });
+                return;
+            }
+            validFiles.push(selectedFile);
         }
 
-        if (selectedFile.size > MAX_SIZE) {
-            toast.error("File too large", {
-                description: "Maximum file size is 50MB.",
-            });
-            return;
-        }
-
-        if (selectedFile.size < MIN_SIZE) {
-            toast.error("File too small", {
-                description: "File seems to be empty or too small.",
-            });
-            return;
-        }
-
-        setFile(selectedFile);
+        const isMulti = category === "internal-papers" || category === "see-pyqs";
+        setFiles(prev => isMulti ? [...prev, ...validFiles] : [validFiles[0]]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -112,14 +117,14 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
         // Validate based on upload type
         if (uploadType === "branch") {
-            if (!branch || !semester || !category || !subject || !file) {
+            if (!branch || !semester || !category || !subject || files.length === 0) {
                 toast.error("Missing fields", {
                     description: "Please fill in all required fields and select a file.",
                 });
                 return;
             }
         } else {
-            if (!stream || !cycle || !category || !subject || !file) {
+            if (!stream || !cycle || !category || !subject || files.length === 0) {
                 toast.error("Missing fields", {
                     description: "Please select stream, cycle, category, subject, and a file.",
                 });
@@ -131,8 +136,47 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         setProgress(0);
 
         try {
+            let finalFile: File = files[0];
+            const isMulti = category === "internal-papers" || category === "see-pyqs";
+
+            if (isMulti && files.length > 0 && files.every(f => f.type.startsWith("image/"))) {
+                toast.info("Generating PDF from images...", { duration: 3000 });
+                try {
+                    const { jsPDF } = await import("jspdf");
+                    const pdf = new jsPDF();
+
+                    for (let i = 0; i < files.length; i++) {
+                        const f = files[i];
+                        const base64Data = await new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target?.result as string);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(f);
+                        });
+
+                        const img = new Image();
+                        img.src = base64Data;
+                        await new Promise((resolve) => { img.onload = resolve; });
+
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (img.height * pdfWidth) / img.width;
+
+                        if (i > 0) pdf.addPage();
+                        pdf.addImage(img, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                    }
+                    const pdfBlob = pdf.output("blob");
+                    finalFile = new File([pdfBlob], `${subject.trim()}.pdf`, { type: "application/pdf" });
+                } catch (err) {
+                    console.error("PDF generation failed:", err);
+                    toast.error("Failed to generate PDF. Proceeding with first image.", { duration: 3000 });
+                }
+            } else if (category === "class-notes" || isMulti) {
+                const ext = finalFile.name.split('.').pop() || "pdf";
+                finalFile = new File([finalFile], `${subject.trim()}.${ext}`, { type: finalFile.type });
+            }
+
             // Build storage path based on type
-            const sanitizedFileName = file!.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
+            const sanitizedFileName = finalFile.name.replace(/[^a-zA-Z0-9.\- ]/g, "_").replace(/ /g, "_");
             const storagePath =
                 uploadType === "branch"
                     ? `${branch}/${semester}/${category}/${Date.now()}_${sanitizedFileName}`
@@ -151,7 +195,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
             const { data, error: uploadError } = await supabase.storage
                 .from("resources")
-                .upload(storagePath, file!, {
+                .upload(storagePath, finalFile, {
                     cacheControl: "3600",
                     upsert: false,
                 });
@@ -170,7 +214,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
             // Build Firestore document based on type
             const docData: Record<string, unknown> = {
-                fileName: file!.name,
+                fileName: finalFile.name,
                 fileUrl,
                 category,
                 subject: subject.trim(),
@@ -204,7 +248,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    fileName: file!.name,
+                    fileName: finalFile.name,
                     subject: subject.trim(),
                     branch: branchLabel,
                     uploaderAlias: alias.trim() || "Anonymous",
@@ -212,7 +256,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
             }).catch(() => { });
 
             toast.success("Upload submitted!", {
-                description: `${file!.name} is pending admin approval. It will appear once approved.`,
+                description: `${finalFile.name} is pending admin approval. It will appear once approved.`,
                 icon: <CheckCircle2 className="h-4 w-4" />,
             });
 
@@ -227,9 +271,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         }
     };
 
-    const getFileIcon = () => {
-        if (!file) return null;
-        if (file.type === "application/pdf")
+    const getFileIcon = (f: File) => {
+        if (!f) return null;
+        if (f.type === "application/pdf")
             return <FileText className="h-4 w-4 text-red-500" />;
         return <ImageIcon className="h-4 w-4 text-blue-500" />;
     };
@@ -396,7 +440,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                             </FieldLabel>
                             <Input
                                 id="subject"
-                                placeholder="e.g. Operating Systems, Process Control"
+                                placeholder={category === "class-notes" ? "e.g. Operating System MOD 1" : "e.g. Operating Systems, Process Control"}
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
                                 required
@@ -406,35 +450,57 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                         {/* File Input */}
                         <Field>
                             <FieldLabel htmlFor="file-upload">
-                                File <span className="text-destructive">*</span>
+                                File(s) <span className="text-destructive">*</span>
                             </FieldLabel>
-                            {file ? (
-                                <div className="flex items-center gap-2 rounded-md border px-3 py-2">
-                                    {getFileIcon()}
-                                    <span className="flex-1 truncate text-sm">{file.name}</span>
-                                    <Badge variant="secondary" className="text-xs">
-                                        {file.size < 1024 * 1024
-                                            ? `${(file.size / 1024).toFixed(1)} KB`
-                                            : `${(file.size / 1024 / 1024).toFixed(1)} MB`}
-                                    </Badge>
-                                    <button
-                                        type="button"
-                                        onClick={() => setFile(null)}
-                                        className="text-muted-foreground hover:text-foreground"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
+                            {files.length > 0 ? (
+                                <div className="flex flex-col gap-2">
+                                    {files.map((f, i) => (
+                                        <div key={i} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                                            {getFileIcon(f)}
+                                            <span className="flex-1 truncate text-sm">{f.name}</span>
+                                            <Badge variant="secondary" className="text-xs">
+                                                {f.size < 1024 * 1024
+                                                    ? `${(f.size / 1024).toFixed(1)} KB`
+                                                    : `${(f.size / 1024 / 1024).toFixed(1)} MB`}
+                                            </Badge>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
+                                                className="text-muted-foreground hover:text-foreground"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {(category === "internal-papers" || category === "see-pyqs") && (
+                                        <div className="mt-2 text-sm text-blue-500">
+                                            <label htmlFor="file-upload-more" className="cursor-pointer hover:underline">
+                                                + Add more images (will compile to PDF)
+                                            </label>
+                                            <Input
+                                                id="file-upload-more"
+                                                type="file"
+                                                className="hidden"
+                                                multiple
+                                                accept=".png,.jpg,.jpeg"
+                                                onChange={handleFileChange}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <Input
                                     id="file-upload"
                                     type="file"
-                                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                                    multiple={category === "internal-papers" || category === "see-pyqs"}
+                                    accept={(category === "internal-papers" || category === "see-pyqs") ? ".pdf,.png,.jpg,.jpeg" : ".pdf,.png,.jpg,.jpeg,.doc,.docx"}
                                     onChange={handleFileChange}
                                 />
                             )}
                             <FieldDescription>
-                                PDF, PNG, JPG, or DOCX only. Max 50MB.
+                                {(category === "internal-papers" || category === "see-pyqs")
+                                    ? "Multiple images will be merged into a PDF automatically. Max 50MB."
+                                    : "PDF, PNG, JPG, or DOCX only. Max 50MB."}
                             </FieldDescription>
                         </Field>
 
