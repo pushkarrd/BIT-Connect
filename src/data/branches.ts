@@ -43,10 +43,10 @@ export const branches: Branch[] = [
         icon: "Monitor",
     },
     {
-        id: "industrial-engineering-management",
-        name: "Industrial Engineering and Management",
-        shortName: "IEM",
-        icon: "Factory",
+        id: "electronics-engineering-vlsi",
+        name: "Electronics Engineering (VLSI Design & Technology)",
+        shortName: "VLSI",
+        icon: "Cpu",
     },
     {
         id: "electronics-telecommunication-engineering",

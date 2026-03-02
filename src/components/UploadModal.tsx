@@ -43,8 +43,11 @@ const ALLOWED_TYPES = [
     "image/png",
     "image/jpeg",
     "image/jpg",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword"
 ];
-const MAX_SIZE = 15 * 1024 * 1024; // 15MB
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+const MIN_SIZE = 100; // 0.1 KB
 
 export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     const [uploadType, setUploadType] = React.useState<"branch" | "first-year">("branch");
@@ -80,16 +83,23 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         const selectedFile = e.target.files?.[0];
         if (!selectedFile) return;
 
-        if (!ALLOWED_TYPES.includes(selectedFile.type)) {
+        if (!ALLOWED_TYPES.includes(selectedFile.type) && !selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.doc')) {
             toast.error("Invalid file type", {
-                description: "Only PDF, PNG, and JPG files are allowed.",
+                description: "Only PDF, PNG, JPG, and DOCX files are allowed.",
             });
             return;
         }
 
         if (selectedFile.size > MAX_SIZE) {
             toast.error("File too large", {
-                description: "Maximum file size is 15MB.",
+                description: "Maximum file size is 50MB.",
+            });
+            return;
+        }
+
+        if (selectedFile.size < MIN_SIZE) {
+            toast.error("File too small", {
+                description: "File seems to be empty or too small.",
             });
             return;
         }
@@ -122,12 +132,22 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
         try {
             // Build storage path based on type
+            const sanitizedFileName = file!.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
             const storagePath =
                 uploadType === "branch"
-                    ? `${branch}/${semester}/${category}/${Date.now()}_${file!.name}`
-                    : `first-year/${stream}/${cycle}/${category}/${Date.now()}_${file!.name}`;
+                    ? `${branch}/${semester}/${category}/${Date.now()}_${sanitizedFileName}`
+                    : `first-year/${stream}/${cycle}/${category}/${Date.now()}_${sanitizedFileName}`;
 
-            setProgress(10);
+            // Simulate progress for better UX
+            const progressInterval = window.setInterval(() => {
+                setProgress((prev) => {
+                    if (prev >= 90) {
+                        window.clearInterval(progressInterval);
+                        return 90;
+                    }
+                    return prev + 10;
+                });
+            }, 500);
 
             const { data, error: uploadError } = await supabase.storage
                 .from("resources")
@@ -136,9 +156,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                     upsert: false,
                 });
 
-            if (uploadError) throw uploadError;
+            window.clearInterval(progressInterval);
 
-            setProgress(80);
+            if (uploadError) throw uploadError;
 
             const { data: urlData } = supabase.storage
                 .from("resources")
@@ -146,7 +166,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
             const fileUrl = urlData.publicUrl;
 
-            setProgress(90);
+            setProgress(95);
 
             // Build Firestore document based on type
             const docData: Record<string, unknown> = {
@@ -393,7 +413,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                                     {getFileIcon()}
                                     <span className="flex-1 truncate text-sm">{file.name}</span>
                                     <Badge variant="secondary" className="text-xs">
-                                        {(file.size / 1024 / 1024).toFixed(1)}MB
+                                        {file.size < 1024 * 1024
+                                            ? `${(file.size / 1024).toFixed(1)} KB`
+                                            : `${(file.size / 1024 / 1024).toFixed(1)} MB`}
                                     </Badge>
                                     <button
                                         type="button"
@@ -407,12 +429,12 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                                 <Input
                                     id="file-upload"
                                     type="file"
-                                    accept=".pdf,.png,.jpg,.jpeg"
+                                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
                                     onChange={handleFileChange}
                                 />
                             )}
                             <FieldDescription>
-                                PDF, PNG, or JPG only. Max 15MB.
+                                PDF, PNG, JPG, or DOCX only. Max 50MB.
                             </FieldDescription>
                         </Field>
 
