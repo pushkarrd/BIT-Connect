@@ -29,9 +29,42 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { fileName, subject, branch, uploaderAlias } = body;
 
+        // 1) Send FCM Web Push Notification to Admins
+        try {
+            if (admin.apps.length > 0) {
+                const db = admin.firestore();
+                const tokensSnapshot = await db.collection("adminTokens").get();
+
+                const tokens: string[] = [];
+                tokensSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.token) tokens.push(data.token);
+                });
+
+                if (tokens.length > 0) {
+                    await admin.messaging().sendEachForMulticast({
+                        tokens,
+                        notification: {
+                            title: "New Upload Pending Approval 📥",
+                            body: `${fileName} uploaded by ${uploaderAlias}.`,
+                        },
+                        webpush: {
+                            fcmOptions: {
+                                link: `${APP_URL}/admin`,
+                            },
+                        },
+                    });
+                    console.log(`Sent Web Push to ${tokens.length} admin devices.`);
+                }
+            }
+        } catch (fcmError) {
+            console.error("FCM Push Error:", fcmError);
+        }
+
+        // 2) WhatsApp Notification
         if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_ID) {
-            console.warn("WhatsApp API credentials not set — skipping notification");
-            return NextResponse.json({ success: false, reason: "API credentials not set" });
+            console.warn("WhatsApp API credentials not set — skipping Whatsapp notification");
+            return NextResponse.json({ success: true, pushSent: true, reason: "WhatsApp skipped" });
         }
 
         const message = [
@@ -69,39 +102,6 @@ export async function POST(req: NextRequest) {
 
         if (!response.ok) {
             console.error("WhatsApp API error:", await response.text());
-            // Don't fail the whole request just because WhatsApp failed, we still want to try FCM Push
-        }
-
-        // 2) Send FCM Web Push Notification to Admins
-        try {
-            if (admin.apps.length > 0) {
-                const db = admin.firestore();
-                const tokensSnapshot = await db.collection("adminTokens").get();
-
-                const tokens: string[] = [];
-                tokensSnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.token) tokens.push(data.token);
-                });
-
-                if (tokens.length > 0) {
-                    await admin.messaging().sendEachForMulticast({
-                        tokens,
-                        notification: {
-                            title: "New Upload Pending Approval 📥",
-                            body: `${fileName} uploaded by ${uploaderAlias}.`,
-                        },
-                        webpush: {
-                            fcmOptions: {
-                                link: `${APP_URL}/admin`,
-                            },
-                        },
-                    });
-                    console.log(`Sent Web Push to ${tokens.length} admin devices.`);
-                }
-            }
-        } catch (fcmError) {
-            console.error("FCM Push Error:", fcmError);
         }
 
         return NextResponse.json({ success: true });
