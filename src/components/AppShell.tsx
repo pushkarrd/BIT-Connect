@@ -11,6 +11,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 export function AppShell({ children }: { children: React.ReactNode }) {
     const [uploadOpen, setUploadOpen] = React.useState(false);
 
+    // Allow any component to trigger the upload modal via a custom event
+    React.useEffect(() => {
+        const handler = () => setUploadOpen(true);
+        window.addEventListener("open-upload-modal", handler);
+        return () => window.removeEventListener("open-upload-modal", handler);
+    }, []);
+
     return (
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <TooltipProvider>

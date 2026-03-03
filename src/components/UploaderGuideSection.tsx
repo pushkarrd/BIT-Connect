@@ -291,11 +291,13 @@ export function UploaderGuideSection() {
                                                 Next Step <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                                             </Button>
                                         ) : (
-                                            <Button size="sm" className="bg-primary" asChild>
-                                                <a href="#" onClick={(e) => { e.preventDefault(); document.getElementById("trigger-upload")?.click(); }}>
-                                                    <Upload className="mr-1.5 h-3.5 w-3.5" />
-                                                    Upload Now!
-                                                </a>
+                                            <Button
+                                                size="sm"
+                                                className="bg-primary"
+                                                onClick={() => window.dispatchEvent(new Event("open-upload-modal"))}
+                                            >
+                                                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                                                Upload Now!
                                             </Button>
                                         )}
                                     </div>
