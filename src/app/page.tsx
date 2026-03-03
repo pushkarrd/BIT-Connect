@@ -33,6 +33,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedLetters, FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
+import { UploaderGuideSection } from "@/components/UploaderGuideSection";
 
 const iconMap: Record<string, LucideIcon> = {
   Building2,
@@ -135,10 +136,13 @@ export default function HomePage() {
 
         {/* Background grid pattern */}
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-      </section >
+      </section>
+
+      {/* Uploader Guide Section */}
+      <UploaderGuideSection />
 
       {/* Browse Resource Vault */}
-      < section id="browse" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8" >
+      <section id="browse" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
 
         {/* 1st Year Section */}
         < div className="mb-12" >
