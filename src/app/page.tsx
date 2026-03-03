@@ -30,6 +30,7 @@ import {
   GraduationCap,
   Calculator,
   FileText,
+  ArrowUpFromLine,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedLetters, FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
@@ -102,6 +103,14 @@ export default function HomePage() {
                   </Link>
                 </Button>
               </StaggerItem>
+              <StaggerItem>
+                <Button size="lg" variant="outline" asChild>
+                  <a href="#upload-guide">
+                    <ArrowUpFromLine className="mr-2 h-4 w-4" />
+                    How to Upload
+                  </a>
+                </Button>
+              </StaggerItem>
             </StaggerContainer>
 
             {/* Stats */}
@@ -137,9 +146,6 @@ export default function HomePage() {
         {/* Background grid pattern */}
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
       </section>
-
-      {/* Uploader Guide Section */}
-      <UploaderGuideSection />
 
       {/* Browse Resource Vault */}
       <section id="browse" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -221,10 +227,13 @@ export default function HomePage() {
             );
           })}
         </div>
-      </section >
+      </section>
+
+      {/* Uploader Guide Section */}
+      <UploaderGuideSection />
 
       {/* About Section */}
-      < section id="about" className="border-t bg-gradient-to-b from-background to-primary/5" >
+      <section id="about" className="border-t bg-gradient-to-b from-background to-primary/5">
         <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">About Us</Badge>

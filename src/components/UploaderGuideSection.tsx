@@ -155,7 +155,7 @@ export function UploaderGuideSection() {
 
     return (
         <section
-            id="how-to-upload"
+            id="upload-guide"
             className="border-t bg-gradient-to-b from-primary/5 via-background to-background"
         >
             <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
@@ -181,7 +181,7 @@ export function UploaderGuideSection() {
                 {/* Step-by-step workflow */}
                 <div className="mb-16">
                     {/* Step indicators */}
-                    <div className="flex items-start justify-center gap-0 mb-8 overflow-x-auto pb-2">
+                    <div className="flex items-start justify-center gap-0 mb-8 overflow-x-auto py-4">
                         {steps.map((step, i) => {
                             const Icon = step.icon;
                             const isActive = activeStep === i;
@@ -194,10 +194,10 @@ export function UploaderGuideSection() {
                                     >
                                         <div
                                             className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ${isActive
-                                                    ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-110"
-                                                    : isDone
-                                                        ? "border-primary/50 bg-primary/10 text-primary"
-                                                        : "border-border bg-muted text-muted-foreground group-hover:border-primary/40 group-hover:bg-primary/5 group-hover:text-primary/70"
+                                                ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-110"
+                                                : isDone
+                                                    ? "border-primary/50 bg-primary/10 text-primary"
+                                                    : "border-border bg-muted text-muted-foreground group-hover:border-primary/40 group-hover:bg-primary/5 group-hover:text-primary/70"
                                                 }`}
                                         >
                                             {isDone ? (
