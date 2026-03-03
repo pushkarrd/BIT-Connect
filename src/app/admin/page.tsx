@@ -262,7 +262,23 @@ export default function AdminPage() {
                 return;
             }
 
-            const token = await getToken(msg, { vapidKey });
+            let registration;
+            if ('serviceWorker' in navigator) {
+                try {
+                    registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                    await navigator.serviceWorker.ready;
+                } catch (swError) {
+                    console.error("Service Worker registration failed:", swError);
+                    toast.error("Service Worker registration failed. Please try again.");
+                    return;
+                }
+            }
+
+            const token = await getToken(msg, {
+                vapidKey,
+                serviceWorkerRegistration: registration
+            });
+
             if (token) {
                 await setDoc(doc(db, "adminTokens", token), {
                     token,
@@ -270,10 +286,13 @@ export default function AdminPage() {
                     updatedAt: new Date(),
                 });
                 toast.success("Subscribed to push notifications!");
+            } else {
+                toast.error("FCM Token generation failed: No token returned.");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("FCM Token error:", error);
-            toast.error("Failed to generate FCM token.");
+            const errorMessage = error?.message || "Failed to generate FCM token.";
+            toast.error(`Error: ${errorMessage}`);
         }
     };
 
