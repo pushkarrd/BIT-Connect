@@ -18,7 +18,7 @@
 
 Browse notes, internal question papers, and SEE PYQs instantly — **no sign-up required**.
 
-[🌐 **Visit Live App**](https://bit-connect-hub.vercel.app/) · [🐛 Report a Bug](https://github.com/pushkarrd/BIT-Connect/issues) · [💡 Request a Feature](https://github.com/pushkarrd/BIT-Connect/issues)
+[🌐 **Visit Live App**](https://bit-connect-prd.vercel.app/) · [🐛 Report a Bug](https://github.com/pushkarrd/BIT-Connect/issues) · [💡 Request a Feature](https://github.com/pushkarrd/BIT-Connect/issues)
 
 </div>
 
