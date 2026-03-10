@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fredoka } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -51,6 +52,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} font-sans antialiased bg-background text-foreground`}
       >
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   );
