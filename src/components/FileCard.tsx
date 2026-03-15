@@ -55,7 +55,11 @@ export function FileCard({
 }: FileCardProps) {
     const MIN_ZOOM = 0.6;
     const MAX_ZOOM = 2;
-    const isPdf = fileName.toLowerCase().endsWith(".pdf");
+    const normalizedFileName = fileName.toLowerCase();
+    const isPdf = normalizedFileName.endsWith(".pdf");
+    const isDocx = normalizedFileName.endsWith(".docx");
+    const isPreviewable = isPdf || isDocx;
+    const docxViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
     const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
     const [isPreviewLoading, setIsPreviewLoading] = React.useState(false);
     const [previewBlobUrl, setPreviewBlobUrl] = React.useState<string | null>(null);
@@ -73,12 +77,19 @@ export function FileCard({
     }, [fileName, fileUrl]);
 
     const handleOpenInNewTab = React.useCallback(() => {
-        const url = previewBlobUrl ?? fileUrl;
+        const url = isPdf ? (previewBlobUrl ?? fileUrl) : isDocx ? docxViewerUrl : fileUrl;
         window.open(url, "_blank", "noopener,noreferrer");
-    }, [fileUrl, previewBlobUrl]);
+    }, [docxViewerUrl, fileUrl, isDocx, isPdf, previewBlobUrl]);
 
     const preloadPreview = React.useCallback(async () => {
-        if (!isPdf || previewBlobUrl || isPreviewLoading) return;
+        if (!isPreviewable) return;
+
+        if (isDocx) {
+            setPreviewError(null);
+            return;
+        }
+
+        if (previewBlobUrl || isPreviewLoading) return;
 
         setIsPreviewLoading(true);
         setPreviewError(null);
@@ -100,7 +111,7 @@ export function FileCard({
         } finally {
             setIsPreviewLoading(false);
         }
-    }, [fileUrl, isPdf, isPreviewLoading, previewBlobUrl]);
+    }, [fileUrl, isDocx, isPreviewLoading, isPreviewable, previewBlobUrl]);
 
     React.useEffect(() => {
         return () => {
@@ -133,7 +144,7 @@ export function FileCard({
                 return;
             }
 
-            if (!event.altKey) return;
+            if (!isPdf || !event.altKey) return;
 
             if (key === "=" || key === "+") {
                 event.preventDefault();
@@ -155,7 +166,7 @@ export function FileCard({
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [MAX_ZOOM, MIN_ZOOM, handleDirectDownload, handleOpenInNewTab, isPreviewOpen]);
+    }, [MAX_ZOOM, MIN_ZOOM, handleDirectDownload, handleOpenInNewTab, isPdf, isPreviewOpen]);
 
     const handlePreviewClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
@@ -213,9 +224,9 @@ export function FileCard({
                                     href={fileUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    onClick={isPdf ? handlePreviewClick : undefined}
-                                    onMouseEnter={isPdf ? preloadPreview : undefined}
-                                    onFocus={isPdf ? preloadPreview : undefined}
+                                    onClick={isPreviewable ? handlePreviewClick : undefined}
+                                    onMouseEnter={isPreviewable ? preloadPreview : undefined}
+                                    onFocus={isPreviewable ? preloadPreview : undefined}
                                 >
                                     Preview
                                 </a>
@@ -245,33 +256,37 @@ export function FileCard({
                         <div className="flex items-center justify-between gap-3">
                             <DialogTitle className="truncate text-base">{fileName}</DialogTitle>
                             <div className="hidden items-center gap-1.5 md:flex">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => setZoom((currentZoom) => Math.max(MIN_ZOOM, Number((currentZoom - 0.1).toFixed(2))))}
-                                >
-                                    <Minus className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => setZoom((currentZoom) => Math.min(MAX_ZOOM, Number((currentZoom + 0.1).toFixed(2))))}
-                                >
-                                    <Plus className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => setZoom(1)}
-                                >
-                                    <RotateCcw className="h-3.5 w-3.5" />
-                                </Button>
+                                {isPdf && (
+                                    <>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setZoom((currentZoom) => Math.max(MIN_ZOOM, Number((currentZoom - 0.1).toFixed(2))))}
+                                        >
+                                            <Minus className="h-3.5 w-3.5" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setZoom((currentZoom) => Math.min(MAX_ZOOM, Number((currentZoom + 0.1).toFixed(2))))}
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setZoom(1)}
+                                        >
+                                            <RotateCcw className="h-3.5 w-3.5" />
+                                        </Button>
+                                    </>
+                                )}
                                 <Button type="button" variant="outline" size="sm" onClick={handleOpenInNewTab}>
                                     <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                                     New tab
@@ -279,7 +294,7 @@ export function FileCard({
                             </div>
                         </div>
                         <p className="mt-2 text-xs text-muted-foreground">
-                            Shortcuts: D download, O open in new tab, Alt + + zoom in, Alt + - zoom out, Alt + 0 reset, Esc close.
+                            Shortcuts: D download, O open in new tab, Esc close{isPdf ? ", Alt + + zoom in, Alt + - zoom out, Alt + 0 reset." : "."}
                         </p>
                     </DialogHeader>
                     <div className="h-[80vh] w-full bg-[radial-gradient(circle_at_top,hsl(var(--muted))_0%,transparent_60%)]">
@@ -296,13 +311,25 @@ export function FileCard({
                             </div>
                         )}
 
-                        {!isPreviewLoading && !previewError && previewBlobUrl && (
+                        {!isPreviewLoading && !previewError && isPdf && previewBlobUrl && (
                             <div className="h-full w-full overflow-auto p-4">
                                 <div className="mx-auto h-full w-full max-w-275 rounded-xl border bg-background shadow-lg transition-transform duration-200" style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}>
                                     <iframe
                                         src={previewBlobUrl}
                                         title={`${fileName} preview`}
                                         className="h-full w-full rounded-xl"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {!isPreviewLoading && !previewError && isDocx && (
+                            <div className="h-full w-full p-3 md:p-4">
+                                <div className="h-full w-full overflow-hidden rounded-xl border bg-background shadow-lg">
+                                    <iframe
+                                        src={docxViewerUrl}
+                                        title={`${fileName} preview`}
+                                        className="h-full w-full"
                                     />
                                 </div>
                             </div>
