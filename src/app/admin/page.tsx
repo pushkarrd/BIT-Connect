@@ -16,6 +16,7 @@ import {
 import { messaging } from "@/lib/firebase";
 import { getToken } from "firebase/messaging";
 import { branches } from "@/data/branches";
+import { getClassNotesSubjectError } from "@/lib/resourceNaming";
 import {
     Card,
     CardHeader,
@@ -27,7 +28,16 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +57,7 @@ import {
     LogOut,
     Trash2,
     Bell,
+    Pencil,
 } from "lucide-react";
 
 interface Resource {
@@ -74,6 +85,26 @@ function getFileIcon(fileName: string) {
     return <ImageIcon className="h-4 w-4 text-blue-500" />;
 }
 
+function getFilePathFromUrl(fileUrl: string): string | null {
+    try {
+        const url = new URL(fileUrl);
+        const pathMatch = url.pathname.match(/\/object\/public\/resources\/(.+)/);
+        return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+    } catch {
+        return null;
+    }
+}
+
+function getFileNameWithoutExtension(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    return dotIndex >= 0 ? fileName.slice(0, dotIndex) : fileName;
+}
+
+function getFileExtension(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    return dotIndex >= 0 ? fileName.slice(dotIndex) : "";
+}
+
 export default function AdminPage() {
     const [authenticated, setAuthenticated] = React.useState(false);
     const [email, setEmail] = React.useState("");
@@ -83,6 +114,10 @@ export default function AdminPage() {
     const [loadingPending, setLoadingPending] = React.useState(true);
     const [loadingApproved, setLoadingApproved] = React.useState(true);
     const [actioningId, setActioningId] = React.useState<string | null>(null);
+    const [renameOpen, setRenameOpen] = React.useState(false);
+    const [renameTarget, setRenameTarget] = React.useState<Resource | null>(null);
+    const [renameSubject, setRenameSubject] = React.useState("");
+    const [renameFileBase, setRenameFileBase] = React.useState("");
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -206,13 +241,82 @@ export default function AdminPage() {
         setActioningId(null);
     };
 
+    const openRenameDialog = (resource: Resource) => {
+        setRenameTarget(resource);
+        setRenameSubject(resource.subject);
+        setRenameFileBase(getFileNameWithoutExtension(resource.fileName));
+        setRenameOpen(true);
+    };
+
+    const handleRename = async () => {
+        if (!renameTarget) return;
+
+        const nextSubject = renameSubject.trim();
+        const nextFileBase = renameFileBase.trim();
+
+        if (!nextSubject || !nextFileBase) {
+            toast.error("Missing rename details", {
+                description: "Enter both the resource title and the file name.",
+            });
+            return;
+        }
+
+        if (renameTarget.category === "class-notes") {
+            const classNotesSubjectError = getClassNotesSubjectError(nextSubject);
+
+            if (classNotesSubjectError) {
+                toast.error("Module number required", {
+                    description: classNotesSubjectError,
+                });
+                return;
+            }
+        }
+
+        const filePath = getFilePathFromUrl(renameTarget.fileUrl);
+        if (!filePath) {
+            toast.error("Failed to rename", {
+                description: "Could not resolve the current storage path for this file.",
+            });
+            return;
+        }
+
+        setActioningId(renameTarget.id);
+        try {
+            const res = await fetch("/api/admin/rename-file", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    password: ADMIN_PASSWORD,
+                    filePath,
+                    newBaseName: nextFileBase,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to rename file");
+            }
+
+            await updateDoc(doc(db, "resources", renameTarget.id), {
+                subject: nextSubject,
+                fileName: data.fileName,
+                fileUrl: data.fileUrl,
+            });
+
+            toast.success(`Renamed: ${data.fileName}`);
+            setRenameOpen(false);
+            setRenameTarget(null);
+        } catch (error) {
+            console.error("Rename error:", error);
+            toast.error("Failed to rename");
+        }
+        setActioningId(null);
+    };
+
     const deleteFile = async (resource: Resource) => {
         setActioningId(resource.id);
         try {
-            // Extract file path from Supabase URL
-            const url = new URL(resource.fileUrl);
-            const pathMatch = url.pathname.match(/\/object\/public\/resources\/(.+)/);
-            const filePath = pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+            const filePath = getFilePathFromUrl(resource.fileUrl);
 
             // Delete file via server-side API (uses service_role, admin-only)
             if (filePath) {
@@ -289,9 +393,9 @@ export default function AdminPage() {
             } else {
                 toast.error("FCM Token generation failed: No token returned.");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("FCM Token error:", error);
-            const errorMessage = error?.message || "Failed to generate FCM token.";
+            const errorMessage = error instanceof Error ? error.message : "Failed to generate FCM token.";
             toast.error(`Error: ${errorMessage}`);
         }
     };
@@ -406,6 +510,15 @@ export default function AdminPage() {
                         Preview
                     </a>
                 </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={actioningId === resource.id}
+                    onClick={() => openRenameDialog(resource)}
+                >
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                    Rename
+                </Button>
                 <div className="ml-auto flex gap-2">
                     {mode === "pending" ? (
                         <>
@@ -474,6 +587,62 @@ export default function AdminPage() {
     return (
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
             <Toaster richColors position="top-center" />
+            <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Rename Resource</DialogTitle>
+                        <DialogDescription>
+                            Admins can update the displayed title and the stored file name for both pending and approved resources.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="rename-subject">Resource title</Label>
+                            <Input
+                                id="rename-subject"
+                                value={renameSubject}
+                                onChange={(e) => setRenameSubject(e.target.value)}
+                                placeholder="Enter the resource title"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="rename-file-name">File name</Label>
+                            <Input
+                                id="rename-file-name"
+                                value={renameFileBase}
+                                onChange={(e) => setRenameFileBase(e.target.value)}
+                                placeholder="Enter the file name"
+                            />
+                            {renameTarget && (
+                                <p className="text-xs text-muted-foreground">
+                                    File extension stays as {getFileExtension(renameTarget.fileName) || "the current format"}.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setRenameOpen(false);
+                                setRenameTarget(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            disabled={!renameTarget || actioningId === renameTarget.id}
+                            onClick={handleRename}
+                        >
+                            Save changes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Header */}
             <div className="mb-6 flex items-center justify-between">

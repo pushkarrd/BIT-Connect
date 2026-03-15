@@ -29,6 +29,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { branches, semesters, categories, firstYearStreams, cycles } from "@/data/branches";
 import { db } from "@/lib/firebase";
+import { getClassNotesSubjectError } from "@/lib/resourceNaming";
 import { supabase } from "@/lib/supabase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Upload, FileText, ImageIcon, X, CheckCircle2 } from "lucide-react";
@@ -65,6 +66,14 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     const [uploading, setUploading] = React.useState(false);
     const [progress, setProgress] = React.useState(0);
 
+    const subjectError = React.useMemo(() => {
+        if (category !== "class-notes" || subject.length === 0) {
+            return null;
+        }
+
+        return getClassNotesSubjectError(subject);
+    }, [category, subject]);
+
     const resetForm = () => {
         setUploadType("branch");
         setBranch("");
@@ -83,7 +92,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         const selectedFiles = Array.from(e.target.files || []);
         if (selectedFiles.length === 0) return;
 
-        let validFiles: File[] = [];
+        const validFiles: File[] = [];
         for (const selectedFile of selectedFiles) {
             if (!ALLOWED_TYPES.includes(selectedFile.type) && !selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.doc')) {
                 toast.error("Invalid file type", {
@@ -114,6 +123,17 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (category === "class-notes") {
+            const classNotesSubjectError = getClassNotesSubjectError(subject);
+
+            if (classNotesSubjectError) {
+                toast.error("Module number required", {
+                    description: classNotesSubjectError,
+                });
+                return;
+            }
+        }
 
         // Validate based on upload type
         if (uploadType === "branch") {
@@ -443,8 +463,14 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                                 placeholder={category === "class-notes" ? "e.g. Operating System MOD 1" : "e.g. Operating Systems, Process Control"}
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
+                                aria-invalid={subjectError ? "true" : "false"}
                                 required
                             />
+                            <FieldDescription className={subjectError ? "text-destructive" : undefined}>
+                                {category === "class-notes"
+                                    ? subjectError || "For class notes, enter the subject name followed by Module 1 to 5. Accepted formats: Module 1, Mod 1, M1."
+                                    : "Enter the subject or paper name for this resource."}
+                            </FieldDescription>
                         </Field>
 
                         {/* File Input */}
