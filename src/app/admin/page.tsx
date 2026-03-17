@@ -58,7 +58,26 @@ import {
     Trash2,
     Bell,
     Pencil,
+    HardDrive,
+    Gauge,
+    RefreshCcw,
+    Files,
 } from "lucide-react";
+import {
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip as RechartsTooltip,
+    BarChart,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Bar,
+    LineChart,
+    Line,
+    Legend,
+} from "recharts";
 
 interface Resource {
     id: string;
@@ -71,6 +90,31 @@ interface Resource {
     uploaderAlias: string;
     status: string;
     timestamp: { seconds: number } | null;
+}
+
+interface StorageStats {
+    generatedAt: string;
+    storageLimitBytes: number;
+    maxUploadBytes: number;
+    usedBytes: number;
+    remainingBytes: number;
+    fileCount: number;
+    pdfCount: number;
+    avgPdfSizeBytes: number;
+    extensionCounts: {
+        pdf: number;
+        image: number;
+        document: number;
+        other: number;
+    };
+    estimatedUploadsAtMaxSize: number;
+    estimatedUploadsByAvgPdf: number;
+    history: {
+        generatedAt: string;
+        generatedAtMs: number;
+        usedBytes: number;
+        usagePercent: number;
+    }[];
 }
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "bitconnect2026";
@@ -100,9 +144,29 @@ function getFileNameWithoutExtension(fileName: string): string {
     return dotIndex >= 0 ? fileName.slice(0, dotIndex) : fileName;
 }
 
+function stripGeneratedPrefix(fileName: string): string {
+    return fileName.replace(/^(\d+_)+/, "");
+}
+
+function getDisplayFileName(fileName: string): string {
+    return stripGeneratedPrefix(fileName).replace(/_/g, " ");
+}
+
+function getDisplayFileBase(fileName: string): string {
+    return getFileNameWithoutExtension(getDisplayFileName(fileName));
+}
+
 function getFileExtension(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
     return dotIndex >= 0 ? fileName.slice(dotIndex) : "";
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes <= 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    const value = bytes / Math.pow(1024, index);
+    return `${value.toFixed(index === 0 ? 0 : 2)} ${units[index]}`;
 }
 
 export default function AdminPage() {
@@ -116,8 +180,10 @@ export default function AdminPage() {
     const [actioningId, setActioningId] = React.useState<string | null>(null);
     const [renameOpen, setRenameOpen] = React.useState(false);
     const [renameTarget, setRenameTarget] = React.useState<Resource | null>(null);
-    const [renameSubject, setRenameSubject] = React.useState("");
-    const [renameFileBase, setRenameFileBase] = React.useState("");
+    const [renameName, setRenameName] = React.useState("");
+    const [storageStats, setStorageStats] = React.useState<StorageStats | null>(null);
+    const [storageLoading, setStorageLoading] = React.useState(false);
+    const [storageRefreshing, setStorageRefreshing] = React.useState(false);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -198,6 +264,57 @@ export default function AdminPage() {
         return () => unsubscribe();
     }, [authenticated]);
 
+    const fetchStorageStats = React.useCallback(
+        async (options?: { manualRefresh?: boolean }) => {
+            if (!authenticated) return;
+
+            const isManual = options?.manualRefresh === true;
+            if (!storageStats && !isManual) {
+                setStorageLoading(true);
+            }
+            if (isManual) {
+                setStorageRefreshing(true);
+            }
+
+            try {
+                const res = await fetch("/api/admin/storage-stats", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        password: ADMIN_PASSWORD,
+                    }),
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Failed to fetch storage analytics");
+                }
+
+                setStorageStats(data);
+            } catch (error) {
+                console.error("Storage analytics error:", error);
+                if (isManual) {
+                    toast.error("Failed to refresh storage analytics");
+                }
+            } finally {
+                setStorageLoading(false);
+                setStorageRefreshing(false);
+            }
+        },
+        [authenticated, storageStats]
+    );
+
+    React.useEffect(() => {
+        if (!authenticated) return;
+
+        fetchStorageStats();
+        const interval = window.setInterval(() => {
+            fetchStorageStats();
+        }, 15000);
+
+        return () => window.clearInterval(interval);
+    }, [authenticated, fetchStorageStats]);
+
     // Fetch approved resources
     React.useEffect(() => {
         if (!authenticated) return;
@@ -233,7 +350,7 @@ export default function AdminPage() {
             await updateDoc(doc(db, "resources", resource.id), {
                 status: "approved",
             });
-            toast.success(`Approved: ${resource.fileName}`);
+            toast.success(`Approved: ${getDisplayFileName(resource.fileName)}`);
         } catch (error) {
             console.error("Approve error:", error);
             toast.error("Failed to approve");
@@ -243,26 +360,24 @@ export default function AdminPage() {
 
     const openRenameDialog = (resource: Resource) => {
         setRenameTarget(resource);
-        setRenameSubject(resource.subject);
-        setRenameFileBase(getFileNameWithoutExtension(resource.fileName));
+        setRenameName(getDisplayFileBase(resource.fileName));
         setRenameOpen(true);
     };
 
     const handleRename = async () => {
         if (!renameTarget) return;
 
-        const nextSubject = renameSubject.trim();
-        const nextFileBase = renameFileBase.trim();
+        const nextName = renameName.trim();
 
-        if (!nextSubject || !nextFileBase) {
+        if (!nextName) {
             toast.error("Missing rename details", {
-                description: "Enter both the resource title and the file name.",
+                description: "Enter the new resource name.",
             });
             return;
         }
 
         if (renameTarget.category === "class-notes") {
-            const classNotesSubjectError = getClassNotesSubjectError(nextSubject);
+            const classNotesSubjectError = getClassNotesSubjectError(nextName);
 
             if (classNotesSubjectError) {
                 toast.error("Module number required", {
@@ -288,7 +403,7 @@ export default function AdminPage() {
                 body: JSON.stringify({
                     password: ADMIN_PASSWORD,
                     filePath,
-                    newBaseName: nextFileBase,
+                    newBaseName: nextName,
                 }),
             });
 
@@ -298,12 +413,12 @@ export default function AdminPage() {
             }
 
             await updateDoc(doc(db, "resources", renameTarget.id), {
-                subject: nextSubject,
-                fileName: data.fileName,
+                subject: nextName,
+                fileName: `${nextName}${getFileExtension(renameTarget.fileName)}`,
                 fileUrl: data.fileUrl,
             });
 
-            toast.success(`Renamed: ${data.fileName}`);
+            toast.success(`Renamed: ${nextName}${getFileExtension(renameTarget.fileName)}`);
             setRenameOpen(false);
             setRenameTarget(null);
         } catch (error) {
@@ -338,7 +453,7 @@ export default function AdminPage() {
             // Delete metadata from Firestore
             await deleteDoc(doc(db, "resources", resource.id));
 
-            toast.success(`Deleted: ${resource.fileName}`);
+            toast.success(`Deleted: ${getDisplayFileName(resource.fileName)}`);
         } catch (error) {
             console.error("Delete error:", error);
             toast.error("Failed to delete");
@@ -468,7 +583,7 @@ export default function AdminPage() {
                     </div>
                     <div className="flex min-w-0 flex-col gap-0.5">
                         <CardTitle className="truncate text-sm">
-                            {resource.fileName}
+                            {getDisplayFileName(resource.fileName)}
                         </CardTitle>
                         <CardDescription className="text-xs">
                             {resource.subject}
@@ -584,6 +699,63 @@ export default function AdminPage() {
         </div>
     );
 
+    const usagePercent = storageStats
+        ? Math.min(
+            100,
+            storageStats.storageLimitBytes > 0
+                ? (storageStats.usedBytes / storageStats.storageLimitBytes) * 100
+                : 0
+        )
+        : 0;
+
+    const usageChartData = storageStats
+        ? [
+            { name: "Used", value: storageStats.usedBytes, color: "#ef4444" },
+            { name: "Available", value: storageStats.remainingBytes, color: "#22c55e" },
+        ]
+        : [];
+
+    const filesChartData = storageStats
+        ? [
+            { name: "PDF", count: storageStats.extensionCounts.pdf },
+            { name: "Images", count: storageStats.extensionCounts.image },
+            { name: "Docs", count: storageStats.extensionCounts.document },
+            { name: "Other", count: storageStats.extensionCounts.other },
+        ]
+        : [];
+
+    const allResources = [...pending, ...approved];
+    const counts = new Map<string, number>();
+
+    allResources.forEach((resource) => {
+        const label = categoryName(resource.category);
+        counts.set(label, (counts.get(label) || 0) + 1);
+    });
+
+    const categoryBreakdownData = Array.from(counts.entries())
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+
+    const growthChartData = storageStats
+        ? storageStats.history.map((point) => ({
+            time: new Date(point.generatedAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+            usedMb: Number((point.usedBytes / (1024 * 1024)).toFixed(2)),
+            usagePercent: Number(point.usagePercent.toFixed(2)),
+        }))
+        : [];
+
+    const usageLevel = usagePercent >= 95 ? "critical" : usagePercent >= 80 ? "warning" : "healthy";
+    const usageBadgeClass =
+        usageLevel === "critical"
+            ? "border-red-500/40 bg-red-500/10 text-red-600"
+            : usageLevel === "warning"
+                ? "border-amber-500/40 bg-amber-500/10 text-amber-600"
+                : "border-emerald-500/40 bg-emerald-500/10 text-emerald-600";
+
     return (
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
             <Toaster richColors position="top-center" />
@@ -598,25 +770,16 @@ export default function AdminPage() {
 
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="rename-subject">Resource title</Label>
+                            <Label htmlFor="rename-name">Resource name</Label>
                             <Input
-                                id="rename-subject"
-                                value={renameSubject}
-                                onChange={(e) => setRenameSubject(e.target.value)}
-                                placeholder="Enter the resource title"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="rename-file-name">File name</Label>
-                            <Input
-                                id="rename-file-name"
-                                value={renameFileBase}
-                                onChange={(e) => setRenameFileBase(e.target.value)}
-                                placeholder="Enter the file name"
+                                id="rename-name"
+                                value={renameName}
+                                onChange={(e) => setRenameName(e.target.value)}
+                                placeholder="Enter the new resource name"
                             />
                             {renameTarget && (
                                 <p className="text-xs text-muted-foreground">
-                                    File extension stays as {getFileExtension(renameTarget.fileName) || "the current format"}.
+                                    This updates both title and file name. Extension stays as {getFileExtension(renameTarget.fileName) || "the current format"}.
                                 </p>
                             )}
                         </div>
@@ -697,6 +860,12 @@ export default function AdminPage() {
                             {approved.length}
                         </Badge>
                     </TabsTrigger>
+                    <TabsTrigger value="storage" className="gap-2">
+                        Storage Analytics
+                        <Badge variant="outline" className="ml-1 px-1.5 py-0 text-xs">
+                            Live
+                        </Badge>
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* Pending Tab */}
@@ -725,6 +894,190 @@ export default function AdminPage() {
                             {approved.map((r) => (
                                 <ResourceCard key={r.id} resource={r} mode="approved" />
                             ))}
+                        </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="storage">
+                    {storageLoading && !storageStats ? (
+                        <LoadingSkeleton />
+                    ) : !storageStats ? (
+                        <EmptyState message="Storage analytics are unavailable right now." />
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-muted-foreground">Last Updated</h3>
+                                    <p className="text-sm">{new Date(storageStats.generatedAt).toLocaleString()}</p>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchStorageStats({ manualRefresh: true })}
+                                    disabled={storageRefreshing}
+                                >
+                                    <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
+                                    {storageRefreshing ? "Refreshing..." : "Refresh now"}
+                                </Button>
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+                                <p className="text-sm font-medium">
+                                    Storage health is {usageLevel} at {usagePercent.toFixed(2)}% usage.
+                                </p>
+                                <Badge variant="outline" className={usageBadgeClass}>
+                                    {usageLevel === "critical" ? "Critical 95%+" : usageLevel === "warning" ? "Warning 80%+" : "Healthy"}
+                                </Badge>
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                            <HardDrive className="h-4 w-4" /> Storage Used
+                                        </CardTitle>
+                                        <CardDescription>{usagePercent.toFixed(2)}% utilized</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-lg font-semibold">{formatBytes(storageStats.usedBytes)}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Available: {formatBytes(storageStats.remainingBytes)} of {formatBytes(storageStats.storageLimitBytes)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                            <FileText className="h-4 w-4" /> PDFs in Storage
+                                        </CardTitle>
+                                        <CardDescription>Total files: {storageStats.fileCount}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-lg font-semibold">{storageStats.pdfCount}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Avg PDF size: {formatBytes(storageStats.avgPdfSizeBytes)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                            <Gauge className="h-4 w-4" /> Expected Uploads
+                                        </CardTitle>
+                                        <CardDescription>Based on max upload size</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-lg font-semibold">{storageStats.estimatedUploadsAtMaxSize}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Max file size assumed: {formatBytes(storageStats.maxUploadBytes)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                            <Files className="h-4 w-4" /> Expected PDF Uploads
+                                        </CardTitle>
+                                        <CardDescription>Based on average PDF size</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-lg font-semibold">{storageStats.estimatedUploadsByAvgPdf}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Uses current PDF average for projection.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div className="grid gap-4 lg:grid-cols-2">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Storage Usage</CardTitle>
+                                        <CardDescription>Used vs available storage space</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="h-72">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={usageChartData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={65}
+                                                    outerRadius={95}
+                                                    dataKey="value"
+                                                    nameKey="name"
+                                                    paddingAngle={2}
+                                                >
+                                                    {usageChartData.map((entry) => (
+                                                        <Cell key={entry.name} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip formatter={(value: number) => formatBytes(value)} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Storage Growth</CardTitle>
+                                        <CardDescription>Historical usage snapshots from Firestore</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="h-72">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={growthChartData} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                <XAxis dataKey="time" minTickGap={24} />
+                                                <YAxis yAxisId="left" allowDecimals={false} />
+                                                <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+                                                <RechartsTooltip />
+                                                <Legend />
+                                                <Line yAxisId="left" type="monotone" dataKey="usedMb" name="Used (MB)" stroke="#2563eb" strokeWidth={2} dot={false} />
+                                                <Line yAxisId="right" type="monotone" dataKey="usagePercent" name="Usage %" stroke="#ef4444" strokeWidth={2} dot={false} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>File Type Distribution</CardTitle>
+                                        <CardDescription>Count of files by type in Supabase</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="h-72">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={filesChartData} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                <XAxis dataKey="name" />
+                                                <YAxis allowDecimals={false} />
+                                                <RechartsTooltip />
+                                                <Bar dataKey="count" fill="#2563eb" radius={[8, 8, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Category Breakdown</CardTitle>
+                                        <CardDescription>Pending + approved resources by category</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="h-72">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={categoryBreakdownData} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                <XAxis dataKey="name" angle={-20} textAnchor="end" height={70} interval={0} />
+                                                <YAxis allowDecimals={false} />
+                                                <RechartsTooltip />
+                                                <Bar dataKey="count" fill="#0f766e" radius={[8, 8, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     )}
                 </TabsContent>

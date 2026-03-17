@@ -43,6 +43,14 @@ interface NavbarProps {
     onUploadClick: () => void;
 }
 
+function stripGeneratedPrefix(fileName: string): string {
+    return fileName.replace(/^(\d+_)+/, "");
+}
+
+function getDisplayFileName(fileName: string): string {
+    return stripGeneratedPrefix(fileName).replace(/_/g, " ");
+}
+
 export function Navbar({ onUploadClick }: NavbarProps) {
     const pathname = usePathname();
     const [searchOpen, setSearchOpen] = React.useState(false);
@@ -142,7 +150,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                 }}
                                 className="flex flex-col gap-1 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                             >
-                                <div className="font-medium line-clamp-1">{result.fileName}</div>
+                                <div className="font-medium line-clamp-1">{getDisplayFileName(result.fileName)}</div>
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <span className="truncate max-w-[120px]">{result.subject}</span>
                                     <span>•</span>

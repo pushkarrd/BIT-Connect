@@ -50,9 +50,7 @@ export async function POST(req: NextRequest) {
 
         const extensionIndex = originalFileName.lastIndexOf(".");
         const extension = extensionIndex >= 0 ? originalFileName.slice(extensionIndex) : "";
-        const underscoreIndex = originalFileName.indexOf("_");
-        const prefix = underscoreIndex >= 0 ? originalFileName.slice(0, underscoreIndex + 1) : "";
-        const renamedFileName = `${prefix}${sanitizedBaseName}${extension}`;
+        const renamedFileName = `${sanitizedBaseName}${extension}`;
         const renamedFilePath = [...pathParts, renamedFileName].join("/");
 
         const supabaseAdmin = getAdminSupabase();

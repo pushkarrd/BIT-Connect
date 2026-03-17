@@ -44,6 +44,14 @@ function getFileIcon(fileName: string) {
     return <ImageIcon className="h-4 w-4 text-blue-500" />;
 }
 
+function stripGeneratedPrefix(fileName: string): string {
+    return fileName.replace(/^(\d+_)+/, "");
+}
+
+function getDisplayFileName(fileName: string): string {
+    return stripGeneratedPrefix(fileName).replace(/_/g, " ");
+}
+
 export function FileCard({
     id,
     fileName,
@@ -65,16 +73,17 @@ export function FileCard({
     const [previewBlobUrl, setPreviewBlobUrl] = React.useState<string | null>(null);
     const [previewError, setPreviewError] = React.useState<string | null>(null);
     const [zoom, setZoom] = React.useState(1);
+    const displayFileName = getDisplayFileName(fileName);
 
     const handleDirectDownload = React.useCallback(() => {
         const anchor = document.createElement("a");
         anchor.href = fileUrl;
-        anchor.download = fileName;
+        anchor.download = displayFileName;
         anchor.rel = "noopener noreferrer";
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
-    }, [fileName, fileUrl]);
+    }, [displayFileName, fileUrl]);
 
     const handleOpenInNewTab = React.useCallback(() => {
         const url = isPdf ? (previewBlobUrl ?? fileUrl) : isDocx ? docxViewerUrl : fileUrl;
@@ -184,7 +193,7 @@ export function FileCard({
                             {getFileIcon(fileName)}
                         </div>
                         <div className="flex min-w-0 flex-col gap-0.5">
-                            <CardTitle className="truncate text-sm pr-2">{fileName}</CardTitle>
+                            <CardTitle className="truncate text-sm pr-2">{displayFileName}</CardTitle>
                             <CardDescription className="text-xs truncate">{subject}</CardDescription>
                         </div>
                     </div>
@@ -236,7 +245,7 @@ export function FileCard({
                                     href={fileUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    download={fileName}
+                                    download={displayFileName}
                                 >
                                     <Download className="mr-1.5 h-3.5 w-3.5" />
                                     Download
@@ -254,7 +263,7 @@ export function FileCard({
                 >
                     <DialogHeader className="border-b bg-linear-to-r from-sky-50 via-cyan-50 to-emerald-50 px-4 py-3 dark:from-sky-950/30 dark:via-cyan-950/30 dark:to-emerald-950/30">
                         <div className="flex items-center justify-between gap-3">
-                            <DialogTitle className="truncate text-base">{fileName}</DialogTitle>
+                            <DialogTitle className="truncate text-base">{displayFileName}</DialogTitle>
                             <div className="hidden items-center gap-1.5 md:flex">
                                 {isPdf && (
                                     <>
@@ -316,7 +325,7 @@ export function FileCard({
                                 <div className="mx-auto h-full w-full max-w-275 rounded-xl border bg-background shadow-lg transition-transform duration-200" style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}>
                                     <iframe
                                         src={previewBlobUrl}
-                                        title={`${fileName} preview`}
+                                        title={`${displayFileName} preview`}
                                         className="h-full w-full rounded-xl"
                                     />
                                 </div>
@@ -328,7 +337,7 @@ export function FileCard({
                                 <div className="h-full w-full overflow-hidden rounded-xl border bg-background shadow-lg">
                                     <iframe
                                         src={docxViewerUrl}
-                                        title={`${fileName} preview`}
+                                        title={`${displayFileName} preview`}
                                         className="h-full w-full"
                                     />
                                 </div>
