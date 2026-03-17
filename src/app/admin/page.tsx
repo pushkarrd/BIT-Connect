@@ -1015,7 +1015,13 @@ export default function AdminPage() {
                                                         <Cell key={entry.name} fill={entry.color} />
                                                     ))}
                                                 </Pie>
-                                                <RechartsTooltip formatter={(value: number) => formatBytes(value)} />
+                                                <RechartsTooltip
+                                                    formatter={(value) => {
+                                                        const rawValue = Array.isArray(value) ? value[0] : value;
+                                                        const numericValue = typeof rawValue === "number" ? rawValue : Number(rawValue ?? 0);
+                                                        return formatBytes(Number.isFinite(numericValue) ? numericValue : 0);
+                                                    }}
+                                                />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </CardContent>
