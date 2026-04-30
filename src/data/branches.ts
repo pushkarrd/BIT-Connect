@@ -3,6 +3,8 @@ export interface Branch {
     name: string;
     shortName: string;
     icon: string; // Lucide icon name
+    /** If true, this branch also shows Sem 1 & 2 cards */
+    hasFirstYearSems?: boolean;
 }
 
 export const branches: Branch[] = [
@@ -11,6 +13,7 @@ export const branches: Branch[] = [
         name: "Electronics and Instrumentation Engineering",
         shortName: "EIE",
         icon: "Gauge",
+        hasFirstYearSems: true,
     },
     {
         id: "civil-engineering",
@@ -87,6 +90,9 @@ export const branches: Branch[] = [
 ];
 
 export const semesters = [3, 4, 5, 6, 7, 8] as const;
+
+/** Semesters shown for branches that include their own 1st & 2nd sem content (e.g. EIE) */
+export const eieAllSemesters = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 export const categories = [
     { id: "class-notes", name: "Class Notes", icon: "BookOpen" },
