@@ -122,7 +122,7 @@ export default function SemesterPage() {
     }
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl overflow-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
             {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
@@ -158,13 +158,13 @@ export default function SemesterPage() {
             </div>
 
             {/* Category Tabs */}
-            <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-                <TabsList className="mb-6">
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="min-w-0">
+                <TabsList className="mb-6 h-auto w-full max-w-full justify-start overflow-x-auto sm:h-9">
                     {categories.map((cat) => {
                         const Icon = categoryIcons[cat.id] || BookOpen;
                         const count = resources.filter((r) => r.category === cat.id).length;
                         return (
-                            <TabsTrigger key={cat.id} value={cat.id}>
+                            <TabsTrigger key={cat.id} value={cat.id} className="shrink-0">
                                 <Icon className="mr-1.5 h-4 w-4" />
                                 {cat.name}
                                 {count > 0 && (
@@ -178,8 +178,8 @@ export default function SemesterPage() {
                 </TabsList>
 
                 {categories.map((cat) => (
-                    <TabsContent key={cat.id} value={cat.id}>
-                        <ScrollArea className="w-full">
+                    <TabsContent key={cat.id} value={cat.id} className="min-w-0">
+                        <ScrollArea className="w-full max-w-full">
                             {loading ? (
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     {Array.from({ length: 6 }).map((_, i) => (

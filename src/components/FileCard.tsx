@@ -186,8 +186,8 @@ export function FileCard({
 
     return (
         <>
-            <Card className="group transition-all hover:shadow-sm">
-                <CardHeader>
+            <Card className="group min-w-0 transition-all hover:shadow-sm">
+                <CardHeader className="px-4 sm:px-6">
                     <div className="flex items-start gap-3 min-w-0">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
                             {getFileIcon(fileName)}
@@ -204,17 +204,17 @@ export function FileCard({
                     </CardAction>
                 </CardHeader>
 
-                <CardFooter className="flex-col gap-3">
+                <CardFooter className="flex-col gap-3 px-4 sm:px-6">
                     {/* Meta info */}
-                    <div className="flex w-full items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground sm:gap-3">
+                        <span className="flex min-w-0 items-center gap-1">
                             <User className="h-3 w-3" />
                             {uploaderAlias}
                         </span>
                         {timestamp && (
                             <>
                                 <Separator orientation="vertical" className="h-3" />
-                                <span className="flex items-center gap-1">
+                                <span className="flex min-w-0 items-center gap-1">
                                     <Clock className="h-3 w-3" />
                                     {formatRelativeTime(timestamp.seconds)}
                                 </span>
@@ -225,10 +225,10 @@ export function FileCard({
                     <Separator />
 
                     {/* Actions */}
-                    <div className="flex w-full items-center justify-between">
+                    <div className="flex w-full flex-col gap-2 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between">
                         <VoteButton resourceId={id} currentVotes={upvotes} />
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" asChild>
+                        <div className="grid w-full grid-cols-2 gap-2 min-[380px]:flex min-[380px]:w-auto">
+                            <Button variant="outline" size="sm" className="min-w-0" asChild>
                                 <a
                                     href={fileUrl}
                                     target="_blank"
@@ -240,12 +240,13 @@ export function FileCard({
                                     Preview
                                 </a>
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" className="min-w-0" asChild>
                                 <a
                                     href={fileUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     download={displayFileName}
+                                    className="min-w-0"
                                 >
                                     <Download className="mr-1.5 h-3.5 w-3.5" />
                                     Download

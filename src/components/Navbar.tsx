@@ -174,26 +174,26 @@ export function Navbar({ onUploadClick }: NavbarProps) {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
                 {/* Logo */}
-                <div className="flex items-center gap-3">
-                    <Link href="/" className="flex items-center gap-2.5">
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <Link href="/" className="flex min-w-0 items-center gap-2.5">
                         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                             <GraduationCap className="h-5 w-5 text-primary-foreground" />
                         </div>
-                        <span className="text-lg font-bold tracking-tight">
+                        <span className="min-w-0 text-base font-bold tracking-tight sm:text-lg">
                             BIT <span className="text-primary">Connect</span>
                         </span>
                     </Link>
 
-                    <Separator orientation="vertical" className="h-8 bg-zinc-300 dark:bg-zinc-700" />
+                    <Separator orientation="vertical" className="hidden h-8 bg-zinc-300 min-[380px]:block dark:bg-zinc-700" />
 
                     <Image
                         src="/BIT.png"
                         alt="BIT Logo"
                         width={36}
                         height={36}
-                        className="object-contain"
+                        className="hidden shrink-0 object-contain min-[380px]:block"
                     />
                 </div>
 
@@ -268,7 +268,7 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                 </div>
 
                 {/* Mobile Menu */}
-                <div className="flex items-center gap-2 md:hidden">
+                <div className="flex shrink-0 items-center gap-1.5 md:hidden">
                     <Button variant="outline" size="icon" onClick={() => setSearchOpen(!searchOpen)}>
                         <Search className="h-4 w-4" />
                     </Button>
