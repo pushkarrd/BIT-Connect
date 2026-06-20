@@ -16,7 +16,6 @@ import {
     UserCircle2,
     BookOpen,
     FileText,
-    ImageIcon,
 } from "lucide-react";
 
 const steps = [
@@ -73,8 +72,8 @@ const steps = [
         title: "Enter Subject Name & Your Alias",
         description: (
             <>
-                Type the <strong>Subject Name</strong> (e.g., <em>"Operating Systems MOD 1"</em>{" "}
-                or <em>"Process Control — SEE 2023"</em>). Optionally add an{" "}
+                Type the <strong>Subject Name</strong> (e.g., <em>&quot;Operating Systems MOD 1&quot;</em>{" "}
+                or <em>&quot;Process Control — SEE 2023&quot;</em>). Optionally add an{" "}
                 <strong>Uploader Alias</strong> like your name or a fun tag. Leave it blank to{" "}
                 upload <strong>anonymously</strong> — no sign-up required!
             </>

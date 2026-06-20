@@ -25,7 +25,6 @@ import {
     Cog,
     Zap,
     Monitor,
-    ArrowRight,
     GraduationCap,
     BookOpen,
     type LucideIcon,

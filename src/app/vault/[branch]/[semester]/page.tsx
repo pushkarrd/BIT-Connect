@@ -47,6 +47,12 @@ const categoryIcons: Record<string, React.ElementType> = {
     "see-pyqs": GraduationCap,
 };
 
+const mobileCategoryLabels: Record<string, string> = {
+    "class-notes": "Class Notes",
+    "internal-papers": "Internal Question Paper",
+    "see-pyqs": "SEE Paper",
+};
+
 function FileCardSkeleton() {
     return (
         <Card className="w-full">
@@ -159,16 +165,21 @@ export default function SemesterPage() {
 
             {/* Category Tabs */}
             <Tabs value={activeCategory} onValueChange={setActiveCategory} className="min-w-0">
-                <TabsList className="mb-6 h-auto w-full max-w-full justify-start overflow-x-auto sm:h-9">
+                <TabsList className="mb-6 grid h-auto min-h-20 w-full max-w-full grid-cols-3 items-stretch gap-1 rounded-xl p-1 sm:inline-flex sm:h-9 sm:min-h-0 sm:w-fit sm:items-center sm:gap-0 sm:rounded-lg sm:p-[3px]">
                     {categories.map((cat) => {
                         const Icon = categoryIcons[cat.id] || BookOpen;
                         const count = resources.filter((r) => r.category === cat.id).length;
                         return (
-                            <TabsTrigger key={cat.id} value={cat.id} className="shrink-0">
-                                <Icon className="mr-1.5 h-4 w-4" />
-                                {cat.name}
+                            <TabsTrigger
+                                key={cat.id}
+                                value={cat.id}
+                                className="relative h-18 min-w-0 flex-col justify-center gap-1 rounded-lg px-1 py-2 text-center text-[11px] leading-tight whitespace-normal after:hidden sm:h-[calc(100%-1px)] sm:flex-row sm:gap-1.5 sm:px-2 sm:py-1 sm:text-sm sm:whitespace-nowrap"
+                            >
+                                <Icon className="h-4 w-4 shrink-0 sm:mr-1.5" />
+                                <span className="flex min-h-7 items-center justify-center sm:hidden">{mobileCategoryLabels[cat.id]}</span>
+                                <span className="hidden sm:inline">{cat.name}</span>
                                 {count > 0 && (
-                                    <Badge variant="secondary" className="ml-1.5 text-xs">
+                                    <Badge variant="secondary" className="absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] sm:static sm:ml-1.5 sm:h-auto sm:min-w-0 sm:rounded-md sm:px-2 sm:text-xs">
                                         {count}
                                     </Badge>
                                 )}

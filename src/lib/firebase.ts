@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getMessaging, isSupported } from "firebase/messaging";
+import { getMessaging, isSupported, type Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,7 +19,7 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Initialize Messaging conditionally (only in supported browsers)
-let messagingInstance: any = null;
+let messagingInstance: Messaging | null = null;
 if (typeof window !== "undefined") {
   isSupported().then((supported) => {
     if (supported) {

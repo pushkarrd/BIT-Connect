@@ -9,7 +9,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+    const [mounted, setMounted] = React.useState(false);
     const [uploadOpen, setUploadOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Allow any component to trigger the upload modal via a custom event
     React.useEffect(() => {
@@ -17,6 +22,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         window.addEventListener("open-upload-modal", handler);
         return () => window.removeEventListener("open-upload-modal", handler);
     }, []);
+
+    if (!mounted) {
+        return null;
+    }
 
     return (
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

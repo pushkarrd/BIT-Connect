@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import * as admin from "firebase-admin";
+import { getFirebaseAdminApp } from "@/lib/firebaseAdmin";
 
 type StorageListItem = {
     name: string;
@@ -36,20 +37,6 @@ type StorageHistoryPoint = {
     usedBytes: number;
     usagePercent: number;
 };
-
-if (!admin.apps.length) {
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-            }),
-        });
-    } catch (error) {
-        console.error("Firebase Admin Initialization Error", error);
-    }
-}
 
 function getAdminSupabase() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -163,7 +150,7 @@ async function persistSnapshotAndGetHistory(payload: {
     fileCount: number;
     pdfCount: number;
 }): Promise<StorageHistoryPoint[]> {
-    if (!admin.apps.length) {
+    if (!getFirebaseAdminApp()) {
         return [];
     }
 

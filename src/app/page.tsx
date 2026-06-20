@@ -25,7 +25,6 @@ import {
   Bot,
   ArrowRight,
   BookOpen,
-  Upload,
   Users,
   GraduationCap,
   Calculator,

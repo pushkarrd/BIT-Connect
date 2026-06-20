@@ -200,7 +200,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                 {/* Desktop Navigation */}
                 <NavigationMenu className="hidden md:flex">
                     <NavigationMenuList>
-                        {navLinks.map((link) => (
+                        {navLinks.map((link) => {
+                            const Icon = link.icon;
+                            return (
                             <NavigationMenuItem key={link.href}>
                                 <NavigationMenuLink
                                     asChild
@@ -208,12 +210,13 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                     data-active={pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href))}
                                 >
                                     <Link href={link.href}>
-                                        <link.icon className="mr-1.5 h-4 w-4" />
+                                        <Icon className="mr-1.5 h-4 w-4" />
                                         {link.label}
                                     </Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
-                        ))}
+                            );
+                        })}
                     </NavigationMenuList>
                 </NavigationMenu>
 
@@ -231,6 +234,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                 autoFocus
                             />
                             <button
+                                type="button"
+                                aria-label="Close search"
+                                title="Close search"
                                 onClick={() => {
                                     setSearchOpen(false);
                                     setSearchQuery("");
@@ -249,6 +255,8 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                 <Button
                                     variant="outline"
                                     size="icon"
+                                    aria-label="Search resources"
+                                    title="Search resources"
                                     onClick={() => setSearchOpen(true)}
                                 >
                                     <Search className="h-4 w-4" />
@@ -269,15 +277,15 @@ export function Navbar({ onUploadClick }: NavbarProps) {
 
                 {/* Mobile Menu */}
                 <div className="flex shrink-0 items-center gap-1.5 md:hidden">
-                    <Button variant="outline" size="icon" onClick={() => setSearchOpen(!searchOpen)}>
+                    <Button variant="outline" size="icon" aria-label="Search resources" title="Search resources" onClick={() => setSearchOpen(!searchOpen)}>
                         <Search className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" onClick={onUploadClick}>
+                    <Button variant="outline" size="icon" aria-label="Upload resource" title="Upload resource" onClick={onUploadClick}>
                         <Upload className="h-4 w-4" />
                     </Button>
                     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="outline" size="icon">
+                            <Button variant="outline" size="icon" aria-label="Open navigation menu" title="Open navigation menu">
                                 <Menu className="h-4 w-4" />
                             </Button>
                         </SheetTrigger>
@@ -289,7 +297,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                 </SheetTitle>
                             </SheetHeader>
                             <div className="mt-6 flex flex-col gap-1">
-                                {navLinks.map((link) => (
+                                {navLinks.map((link) => {
+                                    const Icon = link.icon;
+                                    return (
                                     <Link
                                         key={link.href}
                                         href={link.href}
@@ -300,10 +310,11 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                                             : "text-muted-foreground"
                                             }`}
                                     >
-                                        <link.icon className="h-4 w-4" />
+                                        <Icon className="h-4 w-4" />
                                         {link.label}
                                     </Link>
-                                ))}
+                                    );
+                                })}
                             </div>
                             <div className="mt-auto pt-6 px-1">
                                 <div className="flex items-center justify-between">
@@ -329,6 +340,9 @@ export function Navbar({ onUploadClick }: NavbarProps) {
                             autoFocus
                         />
                         <button
+                            type="button"
+                            aria-label="Close search"
+                            title="Close search"
                             onClick={() => {
                                 setSearchOpen(false);
                                 setSearchQuery("");
