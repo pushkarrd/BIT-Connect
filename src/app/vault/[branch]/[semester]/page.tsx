@@ -128,7 +128,7 @@ export default function SemesterPage() {
     }
 
     return (
-        <div className="mx-auto w-full max-w-7xl overflow-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 pb-16">
             {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
@@ -164,8 +164,8 @@ export default function SemesterPage() {
             </div>
 
             {/* Category Tabs */}
-            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="min-w-0">
-                <TabsList className="mb-6 grid h-auto min-h-20 w-full max-w-full grid-cols-3 items-stretch gap-1 rounded-xl p-1 sm:inline-flex sm:h-9 sm:min-h-0 sm:w-fit sm:items-center sm:gap-0 sm:rounded-lg sm:p-[3px]">
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full min-w-0">
+                <TabsList className="mb-6 flex h-auto w-full max-w-full items-center justify-start overflow-x-auto overflow-y-hidden rounded-xl bg-muted/80 p-1.5 gap-1.5 text-muted-foreground scrollbar-none sm:justify-start sm:w-fit">
                     {categories.map((cat) => {
                         const Icon = categoryIcons[cat.id] || BookOpen;
                         const count = resources.filter((r) => r.category === cat.id).length;
@@ -173,13 +173,12 @@ export default function SemesterPage() {
                             <TabsTrigger
                                 key={cat.id}
                                 value={cat.id}
-                                className="relative h-18 min-w-0 flex-col justify-center gap-1 rounded-lg px-1 py-2 text-center text-[11px] leading-tight whitespace-normal after:hidden sm:h-[calc(100%-1px)] sm:flex-row sm:gap-1.5 sm:px-2 sm:py-1 sm:text-sm sm:whitespace-nowrap"
+                                className="shrink-0 inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-medium transition-all after:hidden data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:px-4 sm:py-2 sm:text-sm"
                             >
-                                <Icon className="h-4 w-4 shrink-0 sm:mr-1.5" />
-                                <span className="flex min-h-7 items-center justify-center sm:hidden">{mobileCategoryLabels[cat.id]}</span>
-                                <span className="hidden sm:inline">{cat.name}</span>
+                                <Icon className="h-4 w-4 shrink-0" />
+                                <span>{cat.name}</span>
                                 {count > 0 && (
-                                    <Badge variant="secondary" className="absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] sm:static sm:ml-1.5 sm:h-auto sm:min-w-0 sm:rounded-md sm:px-2 sm:text-xs">
+                                    <Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-[10px] sm:text-xs">
                                         {count}
                                     </Badge>
                                 )}
@@ -189,42 +188,40 @@ export default function SemesterPage() {
                 </TabsList>
 
                 {categories.map((cat) => (
-                    <TabsContent key={cat.id} value={cat.id} className="min-w-0">
-                        <ScrollArea className="w-full max-w-full">
-                            {loading ? (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {Array.from({ length: 6 }).map((_, i) => (
-                                        <FileCardSkeleton key={i} />
-                                    ))}
+                    <TabsContent key={cat.id} value={cat.id} className="w-full min-w-0 outline-none">
+                        {loading ? (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <FileCardSkeleton key={i} />
+                                ))}
+                            </div>
+                        ) : filteredResources.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                                    <Inbox className="h-8 w-8 text-muted-foreground" />
                                 </div>
-                            ) : filteredResources.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                                        <Inbox className="h-8 w-8 text-muted-foreground" />
-                                    </div>
-                                    <h3 className="mt-4 text-lg font-semibold">No resources yet</h3>
-                                    <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                                        Be the first to upload {cat.name.toLowerCase()} for{" "}
-                                        {branch.shortName} Semester {semesterNum}!
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {filteredResources.map((resource) => (
-                                        <FileCard
-                                            key={resource.id}
-                                            id={resource.id}
-                                            fileName={resource.fileName}
-                                            fileUrl={resource.fileUrl}
-                                            subject={resource.subject}
-                                            uploaderAlias={resource.uploaderAlias}
-                                            upvotes={resource.upvotes}
-                                            timestamp={resource.timestamp}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </ScrollArea>
+                                <h3 className="mt-4 text-lg font-semibold">No resources yet</h3>
+                                <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                                    Be the first to upload {cat.name.toLowerCase()} for{" "}
+                                    {branch.shortName} Semester {semesterNum}!
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full">
+                                {filteredResources.map((resource) => (
+                                    <FileCard
+                                        key={resource.id}
+                                        id={resource.id}
+                                        fileName={resource.fileName}
+                                        fileUrl={resource.fileUrl}
+                                        subject={resource.subject}
+                                        uploaderAlias={resource.uploaderAlias}
+                                        upvotes={resource.upvotes}
+                                        timestamp={resource.timestamp}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </TabsContent>
                 ))}
             </Tabs>

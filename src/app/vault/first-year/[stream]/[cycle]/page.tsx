@@ -99,7 +99,7 @@ export default function CyclePage() {
     const filtered = resources.filter((r) => r.category === activeCategory);
 
     return (
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 pb-16">
             {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
@@ -125,7 +125,7 @@ export default function CyclePage() {
                     <Badge>{stream.shortName}</Badge>
                     <Badge variant="outline">{cycle.name}</Badge>
                 </div>
-                <h1 className="mt-2 text-2xl font-bold tracking-tight">
+                <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
                     {stream.name} — {cycle.name}
                 </h1>
                 <p className="mt-1 text-muted-foreground">
@@ -134,31 +134,37 @@ export default function CyclePage() {
             </div>
 
             {/* Category Tabs */}
-            <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-                <TabsList className="mb-6">
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full min-w-0">
+                <TabsList className="mb-6 flex h-auto w-full max-w-full items-center justify-start overflow-x-auto overflow-y-hidden rounded-xl bg-muted/80 p-1.5 gap-1.5 text-muted-foreground scrollbar-none sm:justify-start sm:w-fit">
                     {categories.map((cat) => {
                         const count = resources.filter(
                             (r) => r.category === cat.id
                         ).length;
                         return (
-                            <TabsTrigger key={cat.id} value={cat.id} className="gap-1.5">
+                            <TabsTrigger
+                                key={cat.id}
+                                value={cat.id}
+                                className="shrink-0 inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-medium transition-all after:hidden data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:px-4 sm:py-2 sm:text-sm"
+                            >
                                 {categoryIcons[cat.id]}
                                 {cat.name}
-                                <Badge
-                                    variant="secondary"
-                                    className="ml-1 px-1.5 py-0 text-xs"
-                                >
-                                    {count}
-                                </Badge>
+                                {count > 0 && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="ml-1 px-1.5 py-0.5 text-[10px] sm:text-xs"
+                                    >
+                                        {count}
+                                    </Badge>
+                                )}
                             </TabsTrigger>
                         );
                     })}
                 </TabsList>
 
                 {categories.map((cat) => (
-                    <TabsContent key={cat.id} value={cat.id}>
+                    <TabsContent key={cat.id} value={cat.id} className="w-full min-w-0 outline-none">
                         {loading ? (
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full">
                                 {Array.from({ length: 3 }).map((_, i) => (
                                     <Card key={i}>
                                         <CardHeader>
@@ -187,7 +193,7 @@ export default function CyclePage() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full">
                                 {filtered.map((resource) => (
                                     <FileCard
                                         key={resource.id}
